@@ -4,6 +4,15 @@ import { Sprite } from 'pixi.js';
 import { AlphaTolerance } from '../../../api';
 import { TextureUtils } from '../../../pixi-proxy';
 
+interface NitroHitMap
+{
+    alpha: Uint8Array;
+    width: number;
+    height: number;
+}
+
+type HittableTextureSource = TextureSource & { _nitroHitMap?: NitroHitMap };
+
 export class ExtendedSprite extends Sprite
 {
     private _offsetX: number;
@@ -30,7 +39,7 @@ export class ExtendedSprite extends Sprite
         this._offsetX = 0;
         this._offsetY = 0;
         this._tag = '';
-        this._alphaTolerance = 128;
+        this._alphaTolerance = AlphaTolerance.MATCH_OPAQUE_PIXELS;
         this._varyingDepth = false;
         this._clickHandling = false;
 
@@ -86,14 +95,18 @@ export class ExtendedSprite extends Sprite
 
         if(!sprite.getLocalBounds().rectangle.contains(x, y)) return false;
 
-        //@ts-ignore
-        if(!baseTexture.hitMap)
+        // MATCH_ALL_PIXELS is used by explicit click-target sprites. It must
+        // not be reduced to the normal opaque-pixel threshold.
+        if(sprite.alphaTolerance < 0) return true;
+
+        const hittableSource = (baseTexture as HittableTextureSource);
+
+        if(!hittableSource._nitroHitMap)
         {
             if(!ExtendedSprite.generateHitMap(baseTexture)) return false;
         }
 
-        //@ts-ignore
-        const hitMap = (baseTexture.hitMap as Uint32Array);
+        const hitMap = hittableSource._nitroHitMap;
 
         let dx = (x + texture.frame.x);
         let dy = (y + texture.frame.y);
@@ -104,14 +117,15 @@ export class ExtendedSprite extends Sprite
             dy -= texture.trim.y;
         }
 
-        dx = (Math.round(dx) * baseTexture.resolution);
-        dy = (Math.round(dy) * baseTexture.resolution);
+        const resolution = (baseTexture.resolution || 1);
+        const pixelX = Math.floor(dx * resolution);
+        const pixelY = Math.floor(dy * resolution);
 
-        const ind = (dx + dy * baseTexture.pixelWidth);
-        const ind1 = ind % 32;
-        const ind2 = ind / 32 | 0;
+        if((pixelX < 0) || (pixelY < 0) || (pixelX >= hitMap.width) || (pixelY >= hitMap.height)) return false;
 
-        return (hitMap[ind2] & (1 << ind1)) !== 0;
+        const index = (pixelX + (pixelY * hitMap.width));
+
+        return (hitMap.alpha[index] >= sprite.alphaTolerance);
     }
 
     private static generateHitMap(baseTexture: TextureSource): boolean
@@ -120,27 +134,40 @@ export class ExtendedSprite extends Sprite
 
         const texture = new Texture({ source: baseTexture });
         const sprite = new Sprite(texture);
-        const pixels = TextureUtils.getPixels(sprite);
-        const width = baseTexture.width;
-        const height = baseTexture.height;
-        const hitmap = new Uint32Array(Math.ceil(width * height / 32));
-        const threshold = AlphaTolerance.MATCH_OPAQUE_PIXELS;
 
-        for(let i = 0; i < width * height; i++)
+        try
         {
-            const ind1 = i % 32;
-            const ind2 = i / 32 | 0;
+            // GenerateTextureSystem otherwise defaults to renderer.resolution.
+            // On Retina that produced a 2x pixel buffer which the old 1x
+            // indexer sampled from the wrong quadrant.
+            const result = TextureUtils.getExtractor().pixels({
+                target: sprite,
+                resolution: (baseTexture.resolution || 1)
+            });
 
-            if(pixels[i * 4 + 3] >= threshold) hitmap[ind2] = hitmap[ind2] | (1 << ind1);
+            if(!result || !result.pixels || !result.width || !result.height) return false;
+
+            const alpha = new Uint8Array(result.width * result.height);
+
+            for(let index = 0; index < alpha.length; index++) alpha[index] = result.pixels[(index * 4) + 3];
+
+            (baseTexture as HittableTextureSource)._nitroHitMap = {
+                alpha,
+                width: result.width,
+                height: result.height
+            };
+
+            return true;
         }
-
-        //@ts-ignore
-        baseTexture.hitMap = hitmap;
-
-        sprite.destroy();
-        texture.destroy();
-
-        return true;
+        catch
+        {
+            return false;
+        }
+        finally
+        {
+            sprite.destroy();
+            texture.destroy();
+        }
     }
 
     public get offsetX(): number

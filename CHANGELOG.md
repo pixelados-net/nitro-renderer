@@ -1,5 +1,15 @@
 # Changelog
 
+## 3.0.3 - 2026-07-13
+
+### Fixed
+
+- Rebuilt room sprite hit maps at the texture source resolution instead of the
+  Retina renderer resolution, restoring accurate clicks on furniture and room
+  tiles.
+- Restored per-sprite alpha tolerance, including explicit all-pixel click
+  targets, and removed half-pixel rounding drift from hit-map lookups.
+
 ## 3.0.2 - 2026-07-13
 
 ### Fixed

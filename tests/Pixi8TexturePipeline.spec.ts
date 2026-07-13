@@ -1,8 +1,9 @@
-import { BufferImageSource, RenderTexture, Spritesheet, Texture } from 'pixi.js';
+import { BufferImageSource, Point, RenderTexture, Spritesheet, Texture } from 'pixi.js';
 import { deflate } from 'pako';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AssetManager } from '../src/api/asset/AssetManager';
 import { IAssetData } from '../src/api/asset/IAssetData';
+import { AlphaTolerance } from '../src/api/room/object/enum/AlphaTolerance';
 import { NitroBundle } from '../src/api/utils/NitroBundle';
 import { AdjustmentFilter } from '../src/pixi-proxy/adjustment-filter';
 import { CopyChannelFilter } from '../src/pixi-proxy/CopyChannelFilter';
@@ -115,6 +116,34 @@ describe('Pixi 8 texture pipeline', () =>
         expect(sprite.texture).toBe(Texture.EMPTY);
 
         sprite.destroy();
+    });
+
+    it('indexes room hit maps with their physical resolution and alpha tolerance', () =>
+    {
+        const source = new BufferImageSource({
+            resource: new Uint8Array(32),
+            width: 2,
+            height: 1,
+            resolution: 2
+        });
+        const alpha = new Uint8Array(4 * 2);
+
+        // Logical x=1 maps to physical x=2 at resolution 2.
+        alpha[2 + (0 * 4)] = 255;
+
+        Object.assign(source, { _nitroHitMap: { alpha, width: 4, height: 2 } });
+
+        const sprite = new ExtendedSprite(new Texture({ source }));
+        sprite.blendMode = 'normal';
+
+        expect(sprite.containsPoint(new Point(1.2, 0.2))).toBe(true);
+        expect(sprite.containsPoint(new Point(0.2, 0.2))).toBe(false);
+
+        sprite.alphaTolerance = AlphaTolerance.MATCH_ALL_PIXELS;
+
+        expect(sprite.containsPoint(new Point(0.2, 0.2))).toBe(true);
+
+        sprite.destroy({ texture: true, textureSource: true });
     });
 
     it('constructs every camera and palette filter with Pixi 8 shader resources', () =>
