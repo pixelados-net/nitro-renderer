@@ -23,14 +23,10 @@
   "main": "./index",
   "dependencies": {
     "@pixi/app": "~6.5.0",
-    "@pixi/basis": "~6.5.0",
     "@pixi/canvas-display": "~6.5.0",
-    "@pixi/canvas-extract": "~6.5.0",
-    "@pixi/canvas-renderer": "~6.5.0",
     "@pixi/constants": "~6.5.0",
     "@pixi/core": "~6.5.0",
     "@pixi/display": "~6.5.0",
-    "@pixi/events": "~6.5.0",
     "@pixi/extensions": "~6.5.0",
     "@pixi/extract": "~6.5.0",
     "@pixi/filter-alpha": "~6.5.0",
@@ -67,7 +63,6 @@
     "eslint": "^8.20.0",
     "tslib": "^2.3.1",
     "typescript": "~4.4.4",
-    "vite": "^4.0.2",
-    "vite-plugin-minify": "^1.5.2"
+    "vite": "^4.0.2"
   }
 }

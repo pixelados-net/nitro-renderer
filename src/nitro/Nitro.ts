@@ -46,6 +46,7 @@ export class Nitro implements INitro
     private _cameraManager: IRoomCameraWidgetManager;
     private _soundManager: ISoundManager;
     private _linkTrackers: ILinkEventTracker[];
+    private _heartBeatInterval: ReturnType<typeof setInterval>;
 
     private _isReady: boolean;
     private _isDisposed: boolean;
@@ -67,12 +68,16 @@ export class Nitro implements INitro
         this._cameraManager = new RoomCameraWidgetManager();
         this._soundManager = new SoundManager();
         this._linkTrackers = [];
+        this._heartBeatInterval = null;
 
         this._isReady = false;
         this._isDisposed = false;
 
-        this._core.configuration.events.addEventListener(ConfigurationEvent.LOADED, this.onConfigurationLoadedEvent.bind(this));
-        this._roomEngine.events.addEventListener(RoomEngineEvent.ENGINE_INITIALIZED, this.onRoomEngineReady.bind(this));
+        this.onConfigurationLoadedEvent = this.onConfigurationLoadedEvent.bind(this);
+        this.onRoomEngineReady = this.onRoomEngineReady.bind(this);
+
+        this._core.configuration.events.addEventListener(ConfigurationEvent.LOADED, this.onConfigurationLoadedEvent);
+        this._roomEngine.events.addEventListener(RoomEngineEvent.ENGINE_INITIALIZED, this.onRoomEngineReady);
     }
 
     public static bootstrap(): void
@@ -130,6 +135,17 @@ export class Nitro implements INitro
     public dispose(): void
     {
         if(this._isDisposed) return;
+
+        if(this._heartBeatInterval)
+        {
+            clearInterval(this._heartBeatInterval);
+
+            this._heartBeatInterval = null;
+        }
+
+        if(this._core && this._core.configuration) this._core.configuration.events.removeEventListener(ConfigurationEvent.LOADED, this.onConfigurationLoadedEvent);
+
+        if(this._roomEngine) this._roomEngine.events.removeEventListener(RoomEngineEvent.ENGINE_INITIALIZED, this.onRoomEngineReady);
 
         if(this._roomManager)
         {
@@ -189,6 +205,8 @@ export class Nitro implements INitro
 
         this._isDisposed = true;
         this._isReady = false;
+
+        if(Nitro.INSTANCE === this) Nitro.INSTANCE = null;
     }
 
     private onConfigurationLoadedEvent(event: ConfigurationEvent): void
@@ -270,7 +288,7 @@ export class Nitro implements INitro
     {
         this.sendHeartBeat();
 
-        setInterval(this.sendHeartBeat, 10000);
+        if(!this._heartBeatInterval) this._heartBeatInterval = setInterval(this.sendHeartBeat, 10000);
     }
 
     private sendHeartBeat(): void

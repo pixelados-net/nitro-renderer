@@ -113,7 +113,7 @@ export class TextureUtils
 
     public static getPixels(displayObject: DisplayObject | RenderTexture, frame: Rectangle = null): Uint8Array
     {
-        return this.getExtractor().pixels(displayObject);
+        return this.getExtractor().pixels(displayObject, frame);
     }
 
     public static getRenderer(): Renderer | AbstractRenderer

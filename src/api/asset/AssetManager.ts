@@ -12,6 +12,8 @@ export class AssetManager implements IAssetManager
 {
     public static _INSTANCE: IAssetManager = new AssetManager();
 
+    private static DOWNLOAD_CONCURRENCY: number = 8;
+
     private _textures: Map<string, Texture<Resource>> = new Map();
     private _collections: Map<string, IGraphicAssetCollection> = new Map();
 
@@ -89,66 +91,23 @@ export class AssetManager implements IAssetManager
 
         try
         {
-            for(const url of urls)
+            const queue = urls.slice();
+
+            const worker = async () =>
             {
-                const response = await fetch(url);
-
-                if(response.status !== 200) continue;
-
-                let contentType = 'application/octet-stream';
-
-                if(response.headers.has('Content-Type'))
+                while(queue.length)
                 {
-                    contentType = response.headers.get('Content-Type');
+                    const url = queue.shift();
+
+                    if(!url) continue;
+
+                    await this.downloadAndProcessAsset(url);
                 }
+            };
 
-                switch(contentType)
-                {
-                    case 'application/octet-stream': {
-                        const buffer = await response.arrayBuffer();
-                        const nitroBundle = new NitroBundle(buffer);
+            const workerCount = Math.min(AssetManager.DOWNLOAD_CONCURRENCY, urls.length);
 
-                        await this.processAsset(
-                            nitroBundle.baseTexture,
-                            nitroBundle.jsonFile as IAssetData
-                        );
-                        break;
-                    }
-                    case 'image/png':
-                    case 'image/jpeg':
-                    case 'image/gif': {
-                        const buffer = await response.arrayBuffer();
-                        const base64 = ArrayBufferToBase64(buffer);
-                        const baseTexture = BaseTexture.from(
-                            `data:${ contentType };base64,${ base64 }`
-                        );
-
-                        const createAsset = async () =>
-                        {
-                            const texture = new Texture(baseTexture);
-                            this.setTexture(url, texture);
-                        };
-
-                        if(baseTexture.valid)
-                        {
-                            await createAsset();
-                        }
-                        else
-                        {
-                            await new Promise<void>((resolve, reject) =>
-                            {
-                                baseTexture.once('update', async () =>
-                                {
-                                    await createAsset();
-
-                                    return resolve();
-                                });
-                            });
-                        }
-                        break;
-                    }
-                }
-            }
+            await Promise.all(Array.from({ length: workerCount }, () => worker()));
 
             return Promise.resolve(true);
         }
@@ -157,6 +116,67 @@ export class AssetManager implements IAssetManager
             NitroLogger.error(err);
 
             return Promise.resolve(false);
+        }
+    }
+
+    private async downloadAndProcessAsset(url: string): Promise<void>
+    {
+        const response = await fetch(url);
+
+        if(response.status !== 200) return;
+
+        let contentType = 'application/octet-stream';
+
+        if(response.headers.has('Content-Type'))
+        {
+            contentType = response.headers.get('Content-Type');
+        }
+
+        switch(contentType)
+        {
+            case 'application/octet-stream': {
+                const buffer = await response.arrayBuffer();
+                const nitroBundle = new NitroBundle(buffer);
+
+                await this.processAsset(
+                    nitroBundle.baseTexture,
+                    nitroBundle.jsonFile as IAssetData
+                );
+                break;
+            }
+            case 'image/png':
+            case 'image/jpeg':
+            case 'image/gif': {
+                const buffer = await response.arrayBuffer();
+                const base64 = ArrayBufferToBase64(buffer);
+                const baseTexture = BaseTexture.from(
+                    `data:${ contentType };base64,${ base64 }`
+                );
+
+                const createAsset = async () =>
+                {
+                    const texture = new Texture(baseTexture);
+                    this.setTexture(url, texture);
+                };
+
+                if(baseTexture.valid)
+                {
+                    await createAsset();
+                }
+                else
+                {
+                    await new Promise<void>((resolve, reject) =>
+                    {
+                        baseTexture.once('update', async () =>
+                        {
+                            await createAsset();
+
+                            return resolve();
+                        });
+                    });
+                }
+                break;
+            }
         }
     }
 
