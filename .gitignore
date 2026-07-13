@@ -14,22 +14,26 @@
 chrome-profiler-events*.json
 speed-measure-plugin*.json
 
-# IDEs and editors
-/.idea
+# IDEs, editors and local workspaces
+.vscode/
+.idea/
+.fleet/
+.zed/
+.c9/
+.settings/
+.history/
 .project
 .classpath
-.c9/
 *.launch
-.settings/
+*.sublime-project
 *.sublime-workspace
 
-# IDE - VSCode
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-.history/*
+# AI coding assistants
+.windsurf/
+.cursor/
+.codex/
+.claude/
+.aider/
 
 # misc
 /.sass-cache
@@ -51,5 +55,3 @@ Thumbs.db
 *.bin
 
 plan/
-.codex/
-.claude/
