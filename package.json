@@ -63,6 +63,7 @@
     "@pixi/ticker": "~6.5.0",
     "@pixi/tilemap": "^3.2.2",
     "@pixi/utils": "~6.5.0",
+    "gifenc": "^1.0.3",
     "gifuct-js": "^2.1.2",
     "howler": "^2.2.4",
     "pako": "^2.1.0"

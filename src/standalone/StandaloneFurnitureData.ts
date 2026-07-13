@@ -84,6 +84,30 @@ export class StandaloneFurnitureData
         return furnitureData;
     }
 
+    public getFloorTypeIdByClassName(classname: string): number
+    {
+        if(!classname) return undefined;
+
+        for(const data of this._floorItems.values())
+        {
+            if(data && (data.className === classname)) return data.id;
+        }
+
+        return undefined;
+    }
+
+    public getWallTypeIdByClassName(classname: string): number
+    {
+        if(!classname) return undefined;
+
+        for(const data of this._wallItems.values())
+        {
+            if(data && (data.className === classname)) return data.id;
+        }
+
+        return undefined;
+    }
+
     public removePendingFurniDataListener(listener: IFurnitureDataListener): void
     {
         if(!this._pendingListeners) return;

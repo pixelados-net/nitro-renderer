@@ -9,6 +9,7 @@ import { GetTicker, PixiApplicationProxy } from '../pixi-proxy';
 import { RoomManager } from '../room';
 import { AvatarImaging } from './AvatarImaging';
 import { FurniImaging } from './FurniImaging';
+import { RoomImaging } from './RoomImaging';
 import { StandaloneFurnitureData } from './StandaloneFurnitureData';
 import { waitForNitroEvent } from './waitForNitroEvent';
 
@@ -35,6 +36,7 @@ export class NitroImaging
 
     private _avatar: AvatarImaging;
     private _furni: FurniImaging;
+    private _room: RoomImaging;
 
     private _isDisposed: boolean = false;
 
@@ -108,6 +110,7 @@ export class NitroImaging
 
         this._avatar = new AvatarImaging(this._avatarManager);
         this._furni = new FurniImaging(this._roomEngine);
+        this._room = new RoomImaging(this._roomEngine, this._avatar, this._furnitureData);
     }
 
     public dispose(): void
@@ -155,6 +158,11 @@ export class NitroImaging
     public get furni(): FurniImaging
     {
         return this._furni;
+    }
+
+    public get room(): RoomImaging
+    {
+        return this._room;
     }
 
     public get roomEngine(): RoomEngine

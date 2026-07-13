@@ -64,6 +64,45 @@ const poster = await imaging.furni.render({ typeId: 13 });
 const dataUrl = await imaging.furni.renderDataUrl({ classname: 'throne' });
 ```
 
+## Salas (declarativo)
+
+```ts
+const roomImage = await imaging.room.render({
+    // Plano estilo Habbo ('x' = bloqueado, 0-9 = altura). Opcional:
+    // sin plano se genera una sala cuadrada de `size` tiles.
+    floorPlan: 'xxxxxx\nx0000\nx0000\nx0000\nx0000',
+    items: [
+        { classname: 'throne', x: 2, y: 2, direction: 4, state: 0 },
+        { classname: 'club_sofa', x: 3, y: 1, direction: 2 }
+    ],
+    avatars: [
+        { figure: 'hd-180-1.ch-210-66.lg-270-82', x: 1, y: 3, direction: 4, posture: 'std' }
+    ],
+    width: 600,
+    height: 400,
+    scale: 64
+});
+```
+
+Las direcciones de items/avatares son 0-7 (se convierten a grados internamente). La sala se crea, se fotografía y se destruye automáticamente; los assets de los furnis se esperan antes de capturar.
+
+## Animaciones
+
+```ts
+// Frames con tamaño estable (sin jitter)
+const frames = await imaging.avatar.renderAnimation({ figure, expression: 'wav' }, 8);
+
+// Spritesheet horizontal
+import { buildSpriteSheet, encodeGif } from '@nitrots/nitro-renderer/standalone';
+
+const sheet = await buildSpriteSheet(frames);
+document.body.appendChild(sheet.canvas); // sheet.dataUrl, sheet.frameWidth...
+
+// GIF animado (Blob)
+const gif = await encodeGif(frames, { delayMs: 120 });
+const url = URL.createObjectURL(gif);
+```
+
 ## Limpieza
 
 ```ts
@@ -77,5 +116,4 @@ Si `Nitro.bootstrap()` ya se ejecutó en la misma página, `createNitroImaging` 
 ## Limitaciones actuales
 
 - Solo navegador (usa canvas/WebGL del DOM). El render en Node/servidor está planificado (ver plan de mejoras, M9).
-- Las previews de salas completas (plano + furnis) llegan en el milestone M6.
-- Los GIFs/spritesheets de animaciones llegan en el milestone M6.
+- Los ítems de pared usan una posición por defecto salvo que se pase `location` explícita.

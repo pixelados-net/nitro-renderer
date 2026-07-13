@@ -1,5 +1,6 @@
 import { AvatarAction, AvatarScaleType, AvatarSetType, IAvatarImage } from '../api';
 import { AvatarRenderManager } from '../nitro/avatar';
+import { TextureUtils } from '../pixi-proxy';
 
 export interface IAvatarRenderOptions
 {
@@ -51,6 +52,40 @@ export class AvatarImaging
         return (image ? image.src : null);
     }
 
+    /**
+     * Renders a sequence of animation frames. Unlike render(), every frame
+     * shares the same canvas size, so the sequence can be played or packed
+     * into a spritesheet/GIF without jitter.
+     */
+    public async renderAnimation(options: IAvatarRenderOptions, frameCount: number): Promise<HTMLImageElement[]>
+    {
+        if(!frameCount || (frameCount < 1)) frameCount = 1;
+
+        const avatarImage = await this.createAvatarImage(options);
+
+        const setType = (options.headOnly ? AvatarSetType.HEAD : AvatarSetType.FULL);
+        const images: HTMLImageElement[] = [];
+
+        try
+        {
+            for(let frame = 0; frame < frameCount; frame++)
+            {
+                const texture = avatarImage.getImage(setType, false);
+
+                if(texture) images.push(TextureUtils.generateImage(texture));
+
+                avatarImage.updateAnimationByFrames(1);
+            }
+
+            return images;
+        }
+
+        finally
+        {
+            avatarImage.dispose();
+        }
+    }
+
     private async createAvatarImage(options: IAvatarRenderOptions): Promise<IAvatarImage>
     {
         const timeoutMs = (options.timeoutMs || 15000);
@@ -82,7 +117,7 @@ export class AvatarImaging
         return avatarImage;
     }
 
-    private ensureFigureReady(figure: string, timeoutMs: number): Promise<void>
+    public ensureFigureReady(figure: string, timeoutMs: number): Promise<void>
     {
         const container = this._manager.createFigureContainer(figure);
 
