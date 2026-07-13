@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.0.2 - 2026-07-13
+
+### Fixed
+
+- Matched the room-canvas mask to the stable PixiJS 8 sprite-mask path used by
+  Nitro Render V3, preventing resized room and inventory-preview canvases from
+  being clipped to an empty graphics mask.
+
 ## 3.0.1 - 2026-07-13
 
 ### Fixed

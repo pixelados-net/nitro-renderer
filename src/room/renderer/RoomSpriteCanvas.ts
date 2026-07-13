@@ -1,8 +1,7 @@
 import { RenderTexture } from 'pixi.js';
 import { Container } from 'pixi.js';
-import { Graphics } from 'pixi.js';
 import { Matrix, Point, Rectangle } from 'pixi.js';
-import { Sprite } from 'pixi.js';
+import { Sprite, Texture } from 'pixi.js';
 import { IRoomCanvasMouseListener, IRoomGeometry, IRoomObject, IRoomObjectSprite, IRoomObjectSpriteVisualization, IRoomRenderingCanvas, IRoomSpriteCanvasContainer, IRoomSpriteMouseEvent, MouseEventType, NitroConfiguration, RoomObjectSpriteData, RoomObjectSpriteType, Vector3d } from '../../api';
 import { RoomSpriteMouseEvent } from '../../events';
 import { GetTicker, NitroContainer, NitroSprite, PixiApplicationProxy } from '../../pixi-proxy';
@@ -23,7 +22,7 @@ export class RoomSpriteCanvas implements IRoomRenderingCanvas
 
     private _master: Container;
     private _display: Container;
-    private _mask: Graphics;
+    private _mask: Sprite;
 
     private _sortableSprites: SortableSprite[];
     private _spriteCount: number;
@@ -216,9 +215,13 @@ export class RoomSpriteCanvas implements IRoomRenderingCanvas
         {
             if(!this._mask)
             {
-                this._mask = new Graphics()
-                    .rect(0, 0, width, height)
-                    .fill(0xFF0000);
+                // A white sprite is the same mask used by the working Pixi 8
+                // renderer. It is also a stable, already-uploaded renderable;
+                // rebuilding Graphics geometry while room canvases resize can
+                // briefly leave the display fully clipped in Pixi 8.
+                this._mask = new Sprite(Texture.WHITE);
+                this._mask.width = width;
+                this._mask.height = height;
 
                 if(this._master)
                 {
@@ -229,10 +232,8 @@ export class RoomSpriteCanvas implements IRoomRenderingCanvas
             }
             else
             {
-                this._mask
-                    .clear()
-                    .rect(0, 0, width, height)
-                    .fill(0xFF0000);
+                this._mask.width = width;
+                this._mask.height = height;
             }
         }
 
