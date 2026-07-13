@@ -135,7 +135,7 @@ export class FurnitureBrandedImageVisualization extends FurnitureVisualization
 
             if(this._isAnimated)
             {
-                const gifCollection = Nitro.instance.roomEngine.roomContentLoader.getGifCollection(imageUrl);
+                const gifCollection = (Nitro.instance ? Nitro.instance.roomEngine.roomContentLoader.getGifCollection(imageUrl) : null);
 
                 if(gifCollection)
                 {

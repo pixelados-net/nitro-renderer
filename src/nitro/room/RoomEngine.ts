@@ -136,7 +136,7 @@ export class RoomEngine extends NitroManager implements IRoomEngine, IRoomCreato
             this._roomManager.addUpdateCategory(RoomObjectCategory.ROOM);
         }
 
-        this._roomMessageHandler.setConnection(this._communication.connection);
+        if(this._communication) this._roomMessageHandler.setConnection(this._communication.connection);
 
         this._roomContentLoader.initialize(this.events);
         this._roomContentLoader.setSessionDataManager(this._sessionDataManager);
@@ -3521,7 +3521,7 @@ export class RoomEngine extends NitroManager implements IRoomEngine, IRoomCreato
 
     public get connection(): IConnection
     {
-        return this._communication.connection;
+        return (this._communication ? this._communication.connection : null);
     }
 
     public get sessionDataManager(): ISessionDataManager

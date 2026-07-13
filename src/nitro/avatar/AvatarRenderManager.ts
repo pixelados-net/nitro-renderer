@@ -454,4 +454,9 @@ export class AvatarRenderManager extends NitroManager implements IAvatarRenderMa
     {
         return this._avatarAssetDownloadManager;
     }
+
+    public get effectDownloadManager(): EffectAssetDownloadManager
+    {
+        return this._effectAssetDownloadManager;
+    }
 }

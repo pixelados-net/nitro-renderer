@@ -22,6 +22,7 @@
   ],
   "exports": {
     ".": "./index.ts",
+    "./standalone": "./src/standalone/index.ts",
     "./*": "./*"
   },
   "scripts": {

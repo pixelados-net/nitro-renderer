@@ -8,6 +8,13 @@ import { PixiApplicationProxy } from './PixiApplicationProxy';
 
 export class TextureUtils
 {
+    private static _renderer: Renderer | AbstractRenderer = null;
+
+    public static setRenderer(renderer: Renderer | AbstractRenderer): void
+    {
+        this._renderer = renderer;
+    }
+
     public static generateTexture(displayObject: DisplayObject, region: Rectangle = null, scaleMode: number = null, resolution: number = 1): RenderTexture
     {
         if(!displayObject) return null;
@@ -118,6 +125,8 @@ export class TextureUtils
 
     public static getRenderer(): Renderer | AbstractRenderer
     {
+        if(this._renderer) return this._renderer;
+
         return PixiApplicationProxy.instance.renderer;
     }
 

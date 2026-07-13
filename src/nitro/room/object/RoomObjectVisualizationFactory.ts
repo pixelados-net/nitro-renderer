@@ -1,10 +1,12 @@
-import { IAssetData, IObjectVisualizationData, IRoomObjectGraphicVisualization, IRoomObjectVisualizationFactory, NitroLogger, RoomObjectVisualizationType } from '../../../api';
+import { IAssetData, IAvatarRenderManager, IObjectVisualizationData, IRoomObjectGraphicVisualization, IRoomObjectVisualizationFactory, NitroLogger, RoomObjectVisualizationType } from '../../../api';
 import { RoomObjectSpriteVisualization } from '../../../room';
 import { Nitro } from '../../Nitro';
 import { AvatarVisualization, AvatarVisualizationData, FurnitureAnimatedVisualization, FurnitureAnimatedVisualizationData, FurnitureBadgeDisplayVisualization, FurnitureBBVisualization, FurnitureBottleVisualization, FurnitureBuilderPlaceholderVisualization, FurnitureCounterClockVisualization, FurnitureCuboidVisualization, FurnitureExternalImageVisualization, FurnitureFireworksVisualization, FurnitureGiftWrappedFireworksVisualization, FurnitureGiftWrappedVisualization, FurnitureGuildCustomizedVisualization, FurnitureGuildIsometricBadgeVisualization, FurnitureHabboWheelVisualization, FurnitureIsometricBBVisualization, FurnitureMannequinVisualization, FurnitureMannequinVisualizationData, FurniturePartyBeamerVisualization, FurniturePlanetSystemVisualization, FurniturePosterVisualization, FurnitureQueueTileVisualization, FurnitureResettingAnimatedVisualization, FurnitureRoomBackgroundVisualization, FurnitureScoreBoardVisualization, FurnitureSoundBlockVisualization, FurnitureStickieVisualization, FurnitureValRandomizerVisualization, FurnitureVisualization, FurnitureVisualizationData, FurnitureVoteCounterVisualization, FurnitureVoteMajorityVisualization, FurnitureWaterAreaVisualization, FurnitureYoutubeVisualization, PetVisualization, PetVisualizationData, RoomVisualization, RoomVisualizationData, TileCursorVisualization } from './visualization';
 
 export class RoomObjectVisualizationFactory implements IRoomObjectVisualizationFactory
 {
+    public static FALLBACK_AVATAR_MANAGER: IAvatarRenderManager = null;
+
     private static CACHING_ENABLED: boolean = true;
 
     private _visualizationDatas: Map<string, IObjectVisualizationData>;
@@ -221,7 +223,7 @@ export class RoomObjectVisualizationFactory implements IRoomObjectVisualizationF
 
         if((visualizationData instanceof AvatarVisualizationData) || (visualizationData instanceof FurnitureMannequinVisualizationData))
         {
-            visualizationData.avatarManager = Nitro.instance.avatar;
+            visualizationData.avatarManager = (Nitro.instance ? Nitro.instance.avatar : RoomObjectVisualizationFactory.FALLBACK_AVATAR_MANAGER);
         }
 
         if(RoomObjectVisualizationFactory.CACHING_ENABLED) this._visualizationDatas.set(type, visualizationData);
