@@ -1,6 +1,6 @@
-import { RenderTexture, Resource, Texture } from '@pixi/core';
-import { Sprite } from '@pixi/sprite';
-import { Text } from '@pixi/text';
+import { RenderTexture, TextureSource, Texture } from 'pixi.js';
+import { Sprite } from 'pixi.js';
+import { Text } from 'pixi.js';
 import { NitroContainer, NitroSprite, PixiApplicationProxy, TextureUtils } from '../../../../../pixi-proxy';
 
 export class ExperienceData
@@ -10,7 +10,7 @@ export class ExperienceData
     private _amount: number;
     private _alpha: number;
 
-    constructor(texture: Texture<Resource>)
+    constructor(texture: Texture<TextureSource>)
     {
         this._sprite = new NitroSprite(texture);
         this._texture = null;
@@ -46,8 +46,9 @@ export class ExperienceData
         }
         else
         {
-            PixiApplicationProxy.instance.renderer.render(container, {
-                renderTexture: this._texture,
+            PixiApplicationProxy.instance.renderer.render({
+                container: container,
+                target: this._texture,
                 clear: true
             });
         }

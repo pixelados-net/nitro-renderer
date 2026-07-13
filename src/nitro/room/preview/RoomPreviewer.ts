@@ -1,7 +1,7 @@
-import { RenderTexture, Texture } from '@pixi/core';
-import { Container, DisplayObject } from '@pixi/display';
-import { Point, Rectangle } from '@pixi/math';
-import { Sprite } from '@pixi/sprite';
+import { RenderTexture, Texture } from 'pixi.js';
+import { Container } from 'pixi.js';
+import { Point, Rectangle } from 'pixi.js';
+import { Sprite } from 'pixi.js';
 import { IGetImageListener, IImageResult, IObjectData, IRoomEngine, IRoomObjectController, IRoomRenderingCanvas, IVector3D, LegacyDataType, RoomObjectCategory, RoomObjectUserType, RoomObjectVariable, Vector3d } from '../../../api';
 import { RoomEngineEvent, RoomEngineObjectEvent } from '../../../events';
 import { GetTickerTime, NitroSprite } from '../../../pixi-proxy';
@@ -431,7 +431,7 @@ export class RoomPreviewer
         }
     }
 
-    public getRoomCanvas(width: number, height: number): DisplayObject
+    public getRoomCanvas(width: number, height: number): Container
     {
         if(this.isRoomEngineReady)
         {

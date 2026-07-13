@@ -1,5 +1,4 @@
-import { SCALE_MODES } from '@pixi/constants';
-import { Texture } from '@pixi/core';
+import { Texture } from 'pixi.js';
 import { IsometricImageFurniVisualization } from './IsometricImageFurniVisualization';
 
 export class FurnitureDynamicThumbnailVisualization extends IsometricImageFurniVisualization
@@ -35,7 +34,7 @@ export class FurnitureDynamicThumbnailVisualization extends IsometricImageFurniV
                     {
                         const texture = Texture.from(image);
 
-                        texture.baseTexture.scaleMode = SCALE_MODES.LINEAR;
+                        texture.source.scaleMode = 'linear';
 
                         this.setThumbnailImages(texture);
                     };

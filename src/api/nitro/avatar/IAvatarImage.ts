@@ -1,5 +1,5 @@
-import { RenderTexture } from '@pixi/core';
-import { Sprite } from '@pixi/sprite';
+import { RenderTexture } from 'pixi.js';
+import { Sprite } from 'pixi.js';
 import { IGraphicAsset } from '../../asset';
 import { IDisposable } from '../../common';
 import { IAnimationLayerData, IAvatarDataContainer, ISpriteDataContainer } from './animation';

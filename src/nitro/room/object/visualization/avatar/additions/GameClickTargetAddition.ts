@@ -1,5 +1,5 @@
-import { Resource, Texture } from '@pixi/core';
-import { Sprite } from '@pixi/sprite';
+import { TextureSource, Texture } from 'pixi.js';
+import { Sprite } from 'pixi.js';
 import { AlphaTolerance, IRoomObjectSprite } from '../../../../../../api';
 import { TextureUtils } from '../../../../../../pixi-proxy';
 import { IAvatarAddition } from './IAvatarAddition';
@@ -12,7 +12,7 @@ export class GameClickTargetAddition implements IAvatarAddition
     private static OFFSET_Y: number = -48;
 
     private _id: number;
-    private _asset: Texture<Resource>;
+    private _asset: Texture<TextureSource>;
     private _disposed: boolean;
 
     constructor(id: number)

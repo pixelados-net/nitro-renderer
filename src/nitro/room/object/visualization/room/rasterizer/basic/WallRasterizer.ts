@@ -1,4 +1,4 @@
-﻿import { RenderTexture } from '@pixi/core';
+﻿import { RenderTexture } from 'pixi.js';
 import { IAssetPlane, IVector3D } from '../../../../../../../api';
 import { PlaneTextureCache } from '../../../../../../../pixi-proxy';
 import { PlaneBitmapData } from '../../utils';
@@ -50,7 +50,7 @@ export class WallRasterizer extends PlaneRasterizer
 
         if(graphic && (graphic !== canvas))
         {
-            graphic = new RenderTexture(graphic.baseTexture);
+            graphic = new RenderTexture({ source: graphic.source });
 
             if(!graphic) return null;
         }

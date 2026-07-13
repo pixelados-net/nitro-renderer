@@ -1,11 +1,11 @@
-import { Resource, Texture } from '@pixi/core';
-import { ColorMatrix } from '@pixi/filter-color-matrix';
+import { TextureSource, Texture } from 'pixi.js';
+import { ColorMatrix } from 'pixi.js';
 
 export interface IRoomCameraWidgetEffect
 {
     name: string;
     minLevel: number;
-    texture: Texture<Resource>;
+    texture: Texture<TextureSource>;
     colorMatrix: ColorMatrix;
     blendMode: number;
 }

@@ -1,4 +1,4 @@
-﻿import { Point, Rectangle } from '@pixi/math';
+﻿import { Point, Rectangle } from 'pixi.js';
 import { IPlaneDrawingData, IPlaneVisualization, IRoomObjectSpriteVisualization, IRoomPlane, IRoomRenderingCanvas, RoomObjectCategory, RoomObjectSpriteData, Vector3d } from '../../../api';
 import { PixiApplicationProxy } from '../../../pixi-proxy';
 import { PlaneDrawingData } from '../object';

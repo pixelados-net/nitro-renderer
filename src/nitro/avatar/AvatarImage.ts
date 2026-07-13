@@ -1,8 +1,8 @@
-import { RenderTexture, Texture } from '@pixi/core';
-import { Container } from '@pixi/display';
-import { ColorMatrixFilter } from '@pixi/filter-color-matrix';
-import { Rectangle } from '@pixi/math';
-import { Sprite } from '@pixi/sprite';
+import { RenderTexture, Texture } from 'pixi.js';
+import { Container } from 'pixi.js';
+import { ColorMatrixFilter } from 'pixi.js';
+import { Rectangle } from 'pixi.js';
+import { Sprite } from 'pixi.js';
 import { AdvancedMap, AvatarAction, AvatarDirectionAngle, AvatarScaleType, AvatarSetType, IActionDefinition, IActiveActionData, IAdvancedMap, IAnimationLayerData, IAvatarDataContainer, IAvatarEffectListener, IAvatarFigureContainer, IAvatarImage, IGraphicAsset, IPartColor, ISpriteDataContainer } from '../../api';
 import { GetTickerTime, NitroContainer, NitroSprite, PaletteMapFilter, PixiApplicationProxy, TextureUtils } from '../../pixi-proxy';
 import { ActiveActionData } from './actions';
@@ -377,15 +377,13 @@ export class AvatarImage implements IAvatarImage, IAvatarEffectListener
 
         if(this._avatarSpriteData)
         {
-            if(!container.filters) container.filters = [];
-
-            if(this._avatarSpriteData.colorTransform) container.filters.push(this._avatarSpriteData.colorTransform);
+            if(this._avatarSpriteData.colorTransform) container.filters = [...(container.filters || []), this._avatarSpriteData.colorTransform];
 
             if(this._avatarSpriteData.paletteIsGrayscale)
             {
                 this.convertToGrayscale(container);
 
-                container.filters.push(new PaletteMapFilter(this._avatarSpriteData.reds, PaletteMapFilter.CHANNEL_RED));
+                container.filters = [...(container.filters || []), new PaletteMapFilter(this._avatarSpriteData.reds, PaletteMapFilter.CHANNEL_RED)];
             }
         }
 
@@ -396,13 +394,14 @@ export class AvatarImage implements IAvatarImage, IAvatarEffectListener
 
         if(this._reusableTexture)
         {
-            PixiApplicationProxy.instance.renderer.render(container, {
-                renderTexture: this._reusableTexture,
+            PixiApplicationProxy.instance.renderer.render({
+                container: container,
+                target: this._reusableTexture,
                 clear: true
             });
 
             //@ts-ignore
-            this._reusableTexture.baseTexture.hitMap = null;
+            this._reusableTexture.source.hitMap = null;
         }
         else
         {
@@ -470,8 +469,9 @@ export class AvatarImage implements IAvatarImage, IAvatarEffectListener
 
         const newTexture = new Sprite(Texture.from(textureCanvas));
 
-        PixiApplicationProxy.instance.renderer.render(newTexture, {
-            renderTexture: texture,
+        PixiApplicationProxy.instance.renderer.render({
+            container: newTexture,
+            target: texture,
             clear: true
         });
 
@@ -489,7 +489,7 @@ export class AvatarImage implements IAvatarImage, IAvatarEffectListener
         if(!avatarCanvas) return null;
 
         const setTypes = this.getBodyParts(setType, this._mainAction.definition.geometryType, this._mainDirection);
-        const container = new NitroSprite();
+        const container = new NitroContainer();
         const sprite = new NitroSprite(Texture.EMPTY);
 
         sprite.width = avatarCanvas.width;
@@ -540,7 +540,11 @@ export class AvatarImage implements IAvatarImage, IAvatarEffectListener
             partCount--;
         }
 
-        return container;
+        const texture = TextureUtils.generateTexture(container);
+
+        container.destroy({ children: true });
+
+        return new NitroSprite(texture);
     }
 
     public getCroppedImage(setType: string, scale: number = 1): HTMLImageElement
@@ -617,7 +621,7 @@ export class AvatarImage implements IAvatarImage, IAvatarEffectListener
 
         if(existing)
         {
-            if(!existing.valid)
+            if(!TextureUtils.isValid(existing))
             {
                 this._fullImageCache.remove(k);
 
@@ -1051,7 +1055,7 @@ export class AvatarImage implements IAvatarImage, IAvatarEffectListener
 
         colorFilter.matrix = [_local_3, _local_4, _local_5, 0, 0, _local_3, _local_4, _local_5, 0, 0, _local_3, _local_4, _local_5, 0, 0, 0, 0, 0, 1, 0];
 
-        container.filters.push(colorFilter);
+        container.filters = [...(container.filters || []), colorFilter];
 
         return container;
     }

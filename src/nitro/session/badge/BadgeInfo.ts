@@ -1,17 +1,17 @@
-import { Resource, Texture } from '@pixi/core';
+import { TextureSource, Texture } from 'pixi.js';
 
 export class BadgeInfo
 {
-    private _image: Texture<Resource>;
+    private _image: Texture<TextureSource>;
     private _placeHolder: boolean;
 
-    constructor(image: Texture<Resource>, placeHolder: boolean)
+    constructor(image: Texture<TextureSource>, placeHolder: boolean)
     {
         this._image = image;
         this._placeHolder = placeHolder;
     }
 
-    public get image(): Texture<Resource>
+    public get image(): Texture<TextureSource>
     {
         return this._image;
     }

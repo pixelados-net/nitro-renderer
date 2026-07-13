@@ -1,9 +1,9 @@
-import { Resource, Texture } from '@pixi/core';
+import { TextureSource, Texture } from 'pixi.js';
 
 export interface IGraphicAssetPalette
 {
     dispose: () => void;
-    applyPalette(texture: Texture<Resource>): Texture<Resource>;
+    applyPalette(texture: Texture<TextureSource>): Texture<TextureSource>;
     primaryColor: number;
     secondaryColor: number;
 }

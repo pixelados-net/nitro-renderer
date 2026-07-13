@@ -1,4 +1,4 @@
-import { Application } from '@pixi/app';
+import { Application } from 'pixi.js';
 import { IAvatarRenderManager, IEventDispatcher, ILinkEventTracker, INitroCommunicationManager, INitroCore, INitroLocalizationManager, IRoomCameraWidgetManager, IRoomEngine, IRoomManager, IRoomSessionManager, ISessionDataManager, ISoundManager } from '../api';
 
 export interface INitro

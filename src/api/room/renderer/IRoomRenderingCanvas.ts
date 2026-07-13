@@ -1,6 +1,6 @@
-import { RenderTexture } from '@pixi/core';
-import { DisplayObject } from '@pixi/display';
-import { Point } from '@pixi/math';
+import { RenderTexture } from 'pixi.js';
+import { Container } from 'pixi.js';
+import { Point } from 'pixi.js';
 import { IRoomGeometry } from '../IRoomGeometry';
 import { ISortableSprite } from '../object';
 import { RoomObjectSpriteData } from '../RoomObjectSpriteData';
@@ -27,8 +27,8 @@ export interface IRoomRenderingCanvas
     moveDown(): void;
     id: number;
     geometry: IRoomGeometry;
-    master: DisplayObject;
-    display: DisplayObject;
+    master: Container;
+    display: Container;
     screenOffsetX: number;
     screenOffsetY: number;
     scale: number;

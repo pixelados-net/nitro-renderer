@@ -1,4 +1,4 @@
-import { Resource, Texture } from '@pixi/core';
+import { TextureSource, Texture } from 'pixi.js';
 import { IAssetManager, IDisposable, IMessageEvent, NitroConfiguration } from '../../../api';
 import { BadgeImageReadyEvent } from '../../../events';
 import { NitroContainer, NitroSprite, NitroTexture, TextureUtils } from '../../../pixi-proxy';
@@ -65,7 +65,7 @@ export class BadgeImageManager implements IDisposable
         this._sessionDataManager = null;
     }
 
-    public getBadgeImage(badgeName: string, type: string = BadgeImageManager.NORMAL_BADGE, load: boolean = true): Texture<Resource>
+    public getBadgeImage(badgeName: string, type: string = BadgeImageManager.NORMAL_BADGE, load: boolean = true): Texture<TextureSource>
     {
         let badge = this.getBadgeTexture(badgeName, type);
 
@@ -90,7 +90,7 @@ export class BadgeImageManager implements IDisposable
         return null;
     }
 
-    private getBadgeTexture(badgeName: string, type: string = BadgeImageManager.NORMAL_BADGE): Texture<Resource>
+    private getBadgeTexture(badgeName: string, type: string = BadgeImageManager.NORMAL_BADGE): Texture<TextureSource>
     {
         const url = this.getBadgeUrl(badgeName, type);
 
@@ -98,7 +98,7 @@ export class BadgeImageManager implements IDisposable
 
         const existing = this._assets.getTexture(url);
 
-        if(existing) return existing.clone();
+        if(existing) return TextureUtils.cloneTexture(existing);
 
         if(type === BadgeImageManager.NORMAL_BADGE)
         {
@@ -116,7 +116,7 @@ export class BadgeImageManager implements IDisposable
 
                     const texture = this._assets.getTexture(url);
 
-                    if(texture && this._sessionDataManager) this._sessionDataManager.events.dispatchEvent(new BadgeImageReadyEvent(badgeName, texture.clone()));
+                    if(texture && this._sessionDataManager) this._sessionDataManager.events.dispatchEvent(new BadgeImageReadyEvent(badgeName, TextureUtils.cloneTexture(texture)));
                 })
                 .catch(err =>
                 {
@@ -136,14 +136,14 @@ export class BadgeImageManager implements IDisposable
         return null;
     }
 
-    private getBadgePlaceholder(): Texture<Resource>
+    private getBadgePlaceholder(): Texture<TextureSource>
     {
         const url = (NitroConfiguration.getValue<string>('images.url') + '/loading_icon.png');
         const existing = this._assets.getTexture(url);
 
         if(!existing) return null;
 
-        return existing.clone();
+        return TextureUtils.cloneTexture(existing);
     }
 
     public getBadgeUrl(badge: string, type: string = BadgeImageManager.NORMAL_BADGE): string

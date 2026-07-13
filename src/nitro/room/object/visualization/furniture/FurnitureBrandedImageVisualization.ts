@@ -1,4 +1,4 @@
-import { Resource, Texture } from '@pixi/core';
+import { TextureSource, Texture } from 'pixi.js';
 import { GetAssetManager, GraphicAssetGifCollection, RoomObjectVariable } from '../../../../../api';
 import { Nitro } from '../../../../Nitro';
 import { FurnitureVisualization } from './FurnitureVisualization';
@@ -159,7 +159,7 @@ export class FurnitureBrandedImageVisualization extends FurnitureVisualization
         return false;
     }
 
-    protected imageReady(texture: Texture<Resource>, imageUrl: string): void
+    protected imageReady(texture: Texture<TextureSource>, imageUrl: string): void
     {
         if(!texture)
         {
@@ -216,7 +216,7 @@ export class FurnitureBrandedImageVisualization extends FurnitureVisualization
         this._totalFrames = textures.length;
     }
 
-    protected addBackgroundAsset(texture: Texture<Resource>, state: number, frame: number): void
+    protected addBackgroundAsset(texture: Texture<TextureSource>, state: number, frame: number): void
     {
         let x = 0;
         let y = 0;

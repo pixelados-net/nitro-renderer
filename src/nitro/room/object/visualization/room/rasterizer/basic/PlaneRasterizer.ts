@@ -1,7 +1,7 @@
-﻿import { RenderTexture, Resource, Texture } from '@pixi/core';
-import { Point } from '@pixi/math';
+﻿import { RenderTexture, TextureSource, Texture } from 'pixi.js';
+import { Point } from 'pixi.js';
 import { IAssetPlaneMaterial, IAssetPlaneMaterialCellColumn, IAssetPlaneTexture, IAssetPlaneVisualization, IAssetPlaneVisualizationData, IAssetPlaneVisualizationLayer, IGraphicAsset, IGraphicAssetCollection, IRoomGeometry, IVector3D, Vector3d } from '../../../../../../../api';
-import { PlaneTextureCache } from '../../../../../../../pixi-proxy';
+import { PlaneTextureCache, TextureUtils } from '../../../../../../../pixi-proxy';
 import { Rasterizer, RoomGeometry } from '../../../../../../../room';
 import { PlaneBitmapData } from '../../utils';
 import { IPlaneRasterizer } from '../IPlaneRasterizer';
@@ -248,7 +248,7 @@ export class PlaneRasterizer implements IPlaneRasterizer
 
                                 if(texture)
                                 {
-                                    let newTexture: Texture<Resource> = texture;
+                                    let newTexture: Texture<TextureSource> = texture;
 
                                     if(asset.flipH)
                                     {
@@ -256,7 +256,7 @@ export class PlaneRasterizer implements IPlaneRasterizer
                                     }
                                     else
                                     {
-                                        newTexture = newTexture.clone();
+                                        newTexture = TextureUtils.cloneTexture(newTexture);
                                     }
 
                                     plane.addBitmap(newTexture, normalMinX, normalMaxX, normalMinY, normalMaxY, assetName);

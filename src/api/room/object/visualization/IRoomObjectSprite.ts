@@ -1,5 +1,5 @@
-import { Filter, Resource, Texture } from '@pixi/core';
-import { Container } from '@pixi/display';
+import { Filter, TextureSource, Texture } from 'pixi.js';
+import { Container } from 'pixi.js';
 
 export interface IRoomObjectSprite
 {
@@ -7,7 +7,7 @@ export interface IRoomObjectSprite
     name: string;
     type: string;
     spriteType: number;
-    texture: Texture<Resource>;
+    texture: Texture<TextureSource>;
     container: Container;
     width: number;
     height: number;

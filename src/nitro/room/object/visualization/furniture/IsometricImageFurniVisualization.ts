@@ -1,7 +1,7 @@
-import { Resource, Texture } from '@pixi/core';
-import { Matrix } from '@pixi/math';
+import { TextureSource, Texture } from 'pixi.js';
+import { Matrix } from 'pixi.js';
 import { IGraphicAsset } from '../../../../../api';
-import { NitroSprite, NitroTexture, TextureUtils } from '../../../../../pixi-proxy';
+import { NitroContainer, NitroSprite, NitroTexture, TextureUtils } from '../../../../../pixi-proxy';
 import { FurnitureAnimatedVisualization } from './FurnitureAnimatedVisualization';
 
 export class IsometricImageFurniVisualization extends FurnitureAnimatedVisualization
@@ -9,7 +9,7 @@ export class IsometricImageFurniVisualization extends FurnitureAnimatedVisualiza
     protected static THUMBNAIL: string = 'THUMBNAIL';
 
     private _thumbnailAssetNameNormal: string;
-    private _thumbnailImageNormal: Texture<Resource>;
+    private _thumbnailImageNormal: Texture<TextureSource>;
     private _thumbnailDirection: number;
     private _thumbnailChanged: boolean;
     protected _hasOutline: boolean;
@@ -30,7 +30,7 @@ export class IsometricImageFurniVisualization extends FurnitureAnimatedVisualiza
         return !(this._thumbnailImageNormal == null);
     }
 
-    public setThumbnailImages(k: Texture<Resource>): void
+    public setThumbnailImages(k: Texture<TextureSource>): void
     {
         this._thumbnailImageNormal = k;
         this._thumbnailChanged = true;
@@ -64,7 +64,7 @@ export class IsometricImageFurniVisualization extends FurnitureAnimatedVisualiza
         this._thumbnailDirection = this.direction;
     }
 
-    private addThumbnailAsset(k: Texture<Resource>, scale: number): void
+    private addThumbnailAsset(k: Texture<TextureSource>, scale: number): void
     {
         let layerId = 0;
 
@@ -91,11 +91,11 @@ export class IsometricImageFurniVisualization extends FurnitureAnimatedVisualiza
         }
     }
 
-    protected generateTransformedThumbnail(texture: Texture<Resource>, asset: IGraphicAsset): Texture<Resource>
+    protected generateTransformedThumbnail(texture: Texture<TextureSource>, asset: IGraphicAsset): Texture<TextureSource>
     {
         if(this._hasOutline)
         {
-            const container = new NitroSprite();
+            const container = new NitroContainer();
             const background = new NitroSprite(NitroTexture.WHITE);
 
             background.tint = 0x000000;
@@ -147,7 +147,7 @@ export class IsometricImageFurniVisualization extends FurnitureAnimatedVisualiza
 
         const sprite = new NitroSprite(texture);
 
-        sprite.transform.setFromMatrix(matrix);
+        sprite.setFromMatrix(matrix);
 
         return TextureUtils.generateTexture(sprite);
     }

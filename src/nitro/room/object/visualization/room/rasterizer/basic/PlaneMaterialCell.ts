@@ -1,6 +1,7 @@
-﻿import { Matrix, Point } from '@pixi/math';
-import { Sprite } from '@pixi/sprite';
-import { TilingSprite } from '@pixi/sprite-tiling';
+﻿import { Matrix, Point } from 'pixi.js';
+import { Sprite } from 'pixi.js';
+import { Container } from 'pixi.js';
+import { TilingSprite } from 'pixi.js';
 import { IGraphicAsset, IVector3D } from '../../../../../../../api';
 import { Randomizer } from '../../utils';
 import { PlaneTexture } from './PlaneTexture';
@@ -88,7 +89,7 @@ export class PlaneMaterialCell
         return 0;
     }
 
-    public render(normal: IVector3D, textureOffsetX: number, textureOffsetY: number): Sprite
+    public render(normal: IVector3D, textureOffsetX: number, textureOffsetY: number): Container
     {
         if(!this._texture) return null;
 
@@ -96,7 +97,10 @@ export class PlaneMaterialCell
 
         if(!texture) return null;
 
-        const bitmap = new TilingSprite(texture, texture.width, texture.height);
+        const bitmap = new Container();
+        const background = new TilingSprite(texture, texture.width, texture.height);
+
+        bitmap.addChild(background);
 
         if((textureOffsetX !== 0) || (textureOffsetY !== 0))
         {
@@ -104,20 +108,20 @@ export class PlaneMaterialCell
 
             while(textureOffsetY < 0) textureOffsetY += texture.height;
 
-            bitmap.tilePosition.set((textureOffsetX % texture.width), (textureOffsetY % texture.height));
+            background.tilePosition.set((textureOffsetX % texture.width), (textureOffsetY % texture.height));
 
-            bitmap.uvRespectAnchor = true;
+            background.uvRespectAnchor = true;
 
             if(textureOffsetX)
             {
-                bitmap.anchor.x = 1;
-                bitmap.scale.x = -1;
+                background.anchor.x = 1;
+                background.scale.x = -1;
             }
 
             if(textureOffsetY)
             {
-                bitmap.anchor.y = 1;
-                bitmap.scale.y = -1;
+                background.anchor.y = 1;
+                background.scale.y = -1;
             }
         }
 
@@ -173,7 +177,7 @@ export class PlaneMaterialCell
 
                         const sprite = new Sprite(assetTexture);
 
-                        sprite.transform.setFromMatrix(flipMatrix);
+                        sprite.setFromMatrix(flipMatrix);
 
                         bitmap.addChild(sprite);
                     }

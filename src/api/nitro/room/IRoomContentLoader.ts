@@ -1,4 +1,4 @@
-import { Resource, Texture } from '@pixi/core';
+import { TextureSource, Texture } from 'pixi.js';
 import { IPetColorResult, IRoomContentListener } from '.';
 import { IGraphicAssetCollection, IGraphicAssetGifCollection } from '../../asset';
 import { IEventDispatcher } from '../../common';
@@ -22,13 +22,13 @@ export interface IRoomContentLoader
     getFurnitureWallColorIndex(typeId: number): number;
     getImage(name: string): HTMLImageElement;
     getAssetIconUrl(type: string, colorIndex: string): string;
-    addAssetToCollection(collectionName: string, assetName: string, texture: Texture<Resource>, override?: boolean): boolean;
+    addAssetToCollection(collectionName: string, assetName: string, texture: Texture<TextureSource>, override?: boolean): boolean;
     getPetNameForType(type: number): string;
     downloadImage(id: number, type: string, param: string, events?: IEventDispatcher): boolean;
     getRoomObjectAdUrl(type: string): string;
     getPetColorResult(petIndex: number, paletteIndex: number): IPetColorResult;
     getPetColorResultsForTag(petIndex: number, tagName: string): IPetColorResult[];
     setIconListener(listener: IRoomContentListener): void;
-    createGifCollection(collectionName: string, textures: Texture<Resource>[], durations: number[]): IGraphicAssetGifCollection;
+    createGifCollection(collectionName: string, textures: Texture<TextureSource>[], durations: number[]): IGraphicAssetGifCollection;
     getGifCollection(name: string): IGraphicAssetGifCollection;
 }

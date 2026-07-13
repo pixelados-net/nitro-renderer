@@ -1,8 +1,4 @@
-import { IRenderer, Renderer, RenderTexture, Texture } from '@pixi/core';
-import { DisplayObject } from '@pixi/display';
-import { Extract } from '@pixi/extract';
-import { Matrix, Rectangle } from '@pixi/math';
-import { Sprite } from '@pixi/sprite';
+import { Container, ExtractSystem, Matrix, Rectangle, Renderer, RenderTexture, Sprite, Texture } from 'pixi.js';
 import { PixiApplicationProxy } from './PixiApplicationProxy';
 
 export class PlaneTextureCache
@@ -76,7 +72,7 @@ export class PlaneTextureCache
         return this.clearAndFillRenderTexture(renderTexture, color);
     }
 
-    public createAndWriteRenderTexture(width: number, height: number, displayObject: DisplayObject, planeId: string = null, transform: Matrix = null): RenderTexture
+    public createAndWriteRenderTexture(width: number, height: number, displayObject: Container, planeId: string = null, transform: Matrix = null): RenderTexture
     {
         if((width < 0) || (height < 0)) return null;
 
@@ -99,12 +95,13 @@ export class PlaneTextureCache
         return this.writeToRenderTexture(sprite, renderTexture);
     }
 
-    public writeToRenderTexture(displayObject: DisplayObject, renderTexture: RenderTexture, clear: boolean = true, transform: Matrix = null): RenderTexture
+    public writeToRenderTexture(displayObject: Container, renderTexture: RenderTexture, clear: boolean = true, transform: Matrix = null): RenderTexture
     {
         if(!displayObject || !renderTexture) return null;
 
-        this.getRenderer().render(displayObject, {
-            renderTexture,
+        this.getRenderer().render({
+            container: displayObject,
+            target: renderTexture,
             clear,
             transform
         });
@@ -112,18 +109,20 @@ export class PlaneTextureCache
         return renderTexture;
     }
 
-    public getPixels(displayObject: DisplayObject | RenderTexture, frame: Rectangle = null): Uint8Array
+    public getPixels(displayObject: Container | RenderTexture, frame: Rectangle = null): Uint8Array
     {
-        return this.getExtractor().pixels(displayObject, frame);
+        const result = this.getExtractor().pixels(frame ? { target: displayObject, frame } : displayObject);
+
+        return Uint8Array.from(result.pixels);
     }
 
-    public getRenderer(): Renderer | IRenderer
+    public getRenderer(): Renderer
     {
         return PixiApplicationProxy.instance.renderer;
     }
 
-    public getExtractor(): Extract
+    public getExtractor(): ExtractSystem
     {
-        return ((this.getRenderer() as Renderer).extract as Extract);
+        return this.getRenderer().extract;
     }
 }

@@ -1,4 +1,4 @@
-import { Resource, Texture } from '@pixi/core';
+import { TextureSource, Texture } from 'pixi.js';
 import { NitroEvent } from '../core';
 
 export class BadgeImageReadyEvent extends NitroEvent
@@ -6,9 +6,9 @@ export class BadgeImageReadyEvent extends NitroEvent
     public static IMAGE_READY: string = 'BIME_BADGE_IMAGE_READY';
 
     private _badgeId: string;
-    private _image: Texture<Resource>;
+    private _image: Texture<TextureSource>;
 
-    constructor(badgeId: string, image: Texture<Resource>)
+    constructor(badgeId: string, image: Texture<TextureSource>)
     {
         super(BadgeImageReadyEvent.IMAGE_READY);
 
@@ -21,7 +21,7 @@ export class BadgeImageReadyEvent extends NitroEvent
         return this._badgeId;
     }
 
-    public get image(): Texture<Resource>
+    public get image(): Texture<TextureSource>
     {
         return this._image;
     }

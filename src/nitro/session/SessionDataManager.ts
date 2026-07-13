@@ -1,4 +1,4 @@
-import { Resource, Texture } from '@pixi/core';
+import { TextureSource, Texture } from 'pixi.js';
 import { GetAssetManager, IFurnitureData, IFurnitureDataListener, IGroupInformationManager, IMessageComposer, INitroCommunicationManager, INitroEvent, IProductData, IProductDataListener, ISessionDataManager, NitroConfiguration, NoobnessLevelEnum, SecurityLevel } from '../../api';
 import { NitroManager } from '../../core';
 import { MysteryBoxKeysUpdateEvent, NitroSettingsEvent, SessionDataPreferencesEvent, UserNameUpdateEvent } from '../../events';
@@ -522,12 +522,12 @@ export class SessionDataManager extends NitroManager implements ISessionDataMana
         return this._badgeImageManager.getBadgeUrl(name, BadgeImageManager.GROUP_BADGE);
     }
 
-    public getBadgeImage(name: string): Texture<Resource>
+    public getBadgeImage(name: string): Texture<TextureSource>
     {
         return this._badgeImageManager.getBadgeImage(name);
     }
 
-    public getGroupBadgeImage(name: string): Texture<Resource>
+    public getGroupBadgeImage(name: string): Texture<TextureSource>
     {
         return this._badgeImageManager.getBadgeImage(name, BadgeImageManager.GROUP_BADGE);
     }

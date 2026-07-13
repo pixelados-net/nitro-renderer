@@ -1,9 +1,10 @@
-import { Texture } from '@pixi/core';
-import { ColorMatrix, ColorMatrixFilter } from '@pixi/filter-color-matrix';
+import { Assets, Texture } from 'pixi.js';
+import { ColorMatrix, ColorMatrixFilter } from 'pixi.js';
 import { IEventDispatcher, IRoomCameraWidgetEffect, IRoomCameraWidgetManager, IRoomCameraWidgetSelectedEffect, NitroConfiguration } from '../../api';
 import { EventDispatcher } from '../../core';
 import { RoomCameraWidgetManagerEvent } from '../../events';
 import { NitroContainer, NitroSprite, TextureUtils } from '../../pixi-proxy';
+import { SpriteUtilities } from '../../room';
 import { RoomCameraWidgetEffect } from './RoomCameraWidgetEffect';
 
 export class RoomCameraWidgetManager implements IRoomCameraWidgetManager
@@ -25,6 +26,12 @@ export class RoomCameraWidgetManager implements IRoomCameraWidgetManager
 
         this._isLoaded = true;
 
+        void this.loadEffects();
+    }
+
+    private async loadEffects(): Promise<void>
+    {
+
         const imagesUrl = NitroConfiguration.getValue<string>('image.library.url') + 'Habbo-Stories/';
         const effects = NitroConfiguration.getValue<{ name: string, colorMatrix?: ColorMatrix, minLevel: number, blendMode?: number, enabled: boolean }[]>('camera.available.effects');
 
@@ -34,13 +41,21 @@ export class RoomCameraWidgetManager implements IRoomCameraWidgetManager
 
             const cameraEffect = new RoomCameraWidgetEffect(effect.name, effect.minLevel);
 
-            if(effect.colorMatrix.length)
+            if(effect.colorMatrix?.length)
             {
                 cameraEffect.colorMatrix = effect.colorMatrix;
             }
             else
             {
-                cameraEffect.texture = Texture.from(imagesUrl + effect.name + '.png');
+                try
+                {
+                    cameraEffect.texture = await Assets.load<Texture>(imagesUrl + effect.name + '.png');
+                }
+                catch
+                {
+                    continue;
+                }
+
                 cameraEffect.blendMode = effect.blendMode;
             }
 
@@ -72,15 +87,13 @@ export class RoomCameraWidgetManager implements IRoomCameraWidgetManager
                 filter.matrix = effect.colorMatrix;
                 filter.alpha = selectedEffect.alpha;
 
-                if(!sprite.filters) sprite.filters = [];
-
-                sprite.filters.push(filter);
+                sprite.filters = [...(sprite.filters || []), filter];
             }
             else
             {
                 const effectSprite = new NitroSprite(effect.texture);
                 effectSprite.alpha = selectedEffect.alpha;
-                effectSprite.blendMode = effect.blendMode;
+                effectSprite.blendMode = SpriteUtilities.toPixiBlendMode(effect.blendMode);
 
                 container.addChild(effectSprite);
             }

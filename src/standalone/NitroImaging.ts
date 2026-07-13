@@ -1,8 +1,7 @@
-import { IApplicationOptions } from '@pixi/app';
+import { ApplicationOptions } from 'pixi.js';
 import { ISessionDataManager, NitroConfiguration } from '../api';
 import { AvatarRenderEvent, RoomEngineEvent } from '../events';
 import { AvatarRenderManager } from '../nitro/avatar';
-import '../nitro/Plugins';
 import { RoomEngine } from '../nitro/room';
 import { RoomObjectVisualizationFactory } from '../nitro/room/object/RoomObjectVisualizationFactory';
 import { GetTicker, PixiApplicationProxy } from '../pixi-proxy';
@@ -17,7 +16,7 @@ export interface INitroImagingOptions
 {
     configurationUrl?: string;
     configuration?: { [index: string]: any };
-    applicationOptions?: Partial<IApplicationOptions>;
+    applicationOptions?: Partial<ApplicationOptions>;
     timeoutMs?: number;
 }
 
@@ -66,11 +65,14 @@ export class NitroImaging
 
         if(!PixiApplicationProxy.instance)
         {
-            this._application = new PixiApplicationProxy({
+            this._application = await PixiApplicationProxy.create({
                 width: 1,
                 height: 1,
                 autoStart: true,
                 sharedTicker: false,
+                preference: 'webgl',
+                roundPixels: true,
+                gcMaxUnusedTime: 120000,
                 ...(options.applicationOptions || {})
             });
         }

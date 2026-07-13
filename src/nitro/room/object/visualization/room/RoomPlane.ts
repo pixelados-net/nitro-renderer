@@ -1,8 +1,8 @@
-import { Renderer, RenderTexture, Resource, Texture } from '@pixi/core';
-import { Matrix, Point } from '@pixi/math';
-import { Sprite } from '@pixi/sprite';
+import { BufferImageSource, RenderTexture, Texture, TextureSource } from 'pixi.js';
+import { Matrix, Point } from 'pixi.js';
+import { Sprite } from 'pixi.js';
 import { IRoomGeometry, IRoomPlane, IVector3D, Vector3d } from '../../../../../api';
-import { PixiApplicationProxy, PlaneTextureCache } from '../../../../../pixi-proxy';
+import { PlaneTextureCache } from '../../../../../pixi-proxy';
 import { ColorConverter } from '../../../../../room';
 import { PlaneMaskManager } from './mask';
 import { PlaneDrawingData } from './PlaneDrawingData';
@@ -148,7 +148,7 @@ export class RoomPlane implements IRoomPlane
         return this._canBeVisible;
     }
 
-    public get bitmapData(): Texture<Resource>
+    public get bitmapData(): Texture<TextureSource>
     {
         if(!this.visible || !this._bitmapData) return null;
 
@@ -272,7 +272,7 @@ export class RoomPlane implements IRoomPlane
         this._disposed = true;
     }
 
-    public copyBitmapData(k: Texture<Resource>): Texture<Resource>
+    public copyBitmapData(k: Texture<TextureSource>): Texture<TextureSource>
     {
         if(!this.visible || !this._bitmapData || !k) return null;
 
@@ -668,8 +668,8 @@ export class RoomPlane implements IRoomPlane
 
     private draw(k: RenderTexture, matrix: Matrix): void
     {
-        //k.baseTexture.mipmap = MIPMAP_MODES.OFF;
-        //k.baseTexture.scaleMode = SCALE_MODES.LINEAR;
+        // k.source.autoGenerateMipmaps = false;
+        // k.source.scaleMode = 'linear';
 
         this._textureCache.writeToRenderTexture(new Sprite(k), this._bitmapData, true, matrix);
     }
@@ -878,13 +878,18 @@ export class RoomPlane implements IRoomPlane
             if(!maskRed && !maskGreen && !maskBlue) canvasPixels[i + 3] = 0;
         }
 
-        const canvaGLTexture = canvas.baseTexture._glTextures['1']?.texture;
-        const gl = (PixiApplicationProxy.instance.renderer as Renderer)?.gl;
+        const source = new BufferImageSource({
+            resource: canvasPixels,
+            width: canvas.width,
+            height: canvas.height,
+            scaleMode: canvas.source.scaleMode
+        });
+        const texture = new Texture({ source });
+        const sprite = new Sprite(texture);
 
-        if(!canvaGLTexture || !gl) return;
+        this._textureCache.writeToRenderTexture(sprite, canvas, true);
 
-        gl.bindTexture(gl.TEXTURE_2D, canvaGLTexture);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, canvas.width, canvas.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, canvasPixels);
-        gl.bindTexture(gl.TEXTURE_2D, null);
+        sprite.destroy();
+        texture.destroy(true);
     }
 }

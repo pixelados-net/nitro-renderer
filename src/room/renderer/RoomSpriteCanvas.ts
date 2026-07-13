@@ -1,12 +1,12 @@
-import { RenderTexture } from '@pixi/core';
-import { Container, DisplayObject } from '@pixi/display';
-import { Graphics } from '@pixi/graphics';
-import { Matrix, Point, Rectangle } from '@pixi/math';
-import { Sprite } from '@pixi/sprite';
+import { RenderTexture } from 'pixi.js';
+import { Container } from 'pixi.js';
+import { Graphics } from 'pixi.js';
+import { Matrix, Point, Rectangle } from 'pixi.js';
+import { Sprite } from 'pixi.js';
 import { IRoomCanvasMouseListener, IRoomGeometry, IRoomObject, IRoomObjectSprite, IRoomObjectSpriteVisualization, IRoomRenderingCanvas, IRoomSpriteCanvasContainer, IRoomSpriteMouseEvent, MouseEventType, NitroConfiguration, RoomObjectSpriteData, RoomObjectSpriteType, Vector3d } from '../../api';
 import { RoomSpriteMouseEvent } from '../../events';
 import { GetTicker, NitroContainer, NitroSprite, PixiApplicationProxy } from '../../pixi-proxy';
-import { RoomEnterEffect, RoomGeometry, RoomRotatingEffect, RoomShakingEffect } from '../utils';
+import { RoomEnterEffect, RoomGeometry, RoomRotatingEffect, RoomShakingEffect, SpriteUtilities } from '../utils';
 import { RoomObjectCache, RoomObjectCacheItem } from './cache';
 import { ExtendedSprite, ObjectMouseData, SortableSprite } from './utils';
 
@@ -21,7 +21,7 @@ export class RoomSpriteCanvas implements IRoomRenderingCanvas
     private _totalTimeRunning: number;
     private _lastFrame: number;
 
-    private _master: Sprite;
+    private _master: Container;
     private _display: Container;
     private _mask: Graphics;
 
@@ -122,7 +122,7 @@ export class RoomSpriteCanvas implements IRoomRenderingCanvas
     {
         if(!this._master)
         {
-            this._master = new NitroSprite();
+            this._master = new NitroContainer();
 
             this._master.interactiveChildren = false;
         }
@@ -213,9 +213,8 @@ export class RoomSpriteCanvas implements IRoomRenderingCanvas
             if(!this._mask)
             {
                 this._mask = new Graphics()
-                    .beginFill(0xFF0000)
-                    .drawRect(0, 0, width, height)
-                    .endFill();
+                    .rect(0, 0, width, height)
+                    .fill(0xFF0000);
 
                 if(this._master)
                 {
@@ -228,9 +227,8 @@ export class RoomSpriteCanvas implements IRoomRenderingCanvas
             {
                 this._mask
                     .clear()
-                    .beginFill(0xFF0000)
-                    .drawRect(0, 0, width, height)
-                    .endFill();
+                    .rect(0, 0, width, height)
+                    .fill(0xFF0000);
             }
         }
 
@@ -477,9 +475,9 @@ export class RoomSpriteCanvas implements IRoomRenderingCanvas
             if(!sprite || !sprite.visible) continue;
 
             const texture = sprite.texture;
-            const baseTexture = texture && texture.baseTexture;
+            const textureSource = texture && texture.source;
 
-            if(!texture || !baseTexture) continue;
+            if(!texture || !textureSource) continue;
 
             const spriteX = ((x + sprite.offsetX) + this._screenOffsetX);
             const spriteY = ((y + sprite.offsetY) + this._screenOffsetY);
@@ -592,7 +590,7 @@ export class RoomSpriteCanvas implements IRoomRenderingCanvas
         {
             extendedSprite.tag = objectSprite.tag;
             extendedSprite.alphaTolerance = objectSprite.alphaTolerance;
-            extendedSprite.name = sprite.name;
+            extendedSprite.label = sprite.name;
             extendedSprite.varyingDepth = objectSprite.varyingDepth;
             extendedSprite.clickHandling = objectSprite.clickHandling;
             extendedSprite.filters = objectSprite.filters;
@@ -603,7 +601,9 @@ export class RoomSpriteCanvas implements IRoomRenderingCanvas
 
             if(extendedSprite.tint !== objectSprite.color) extendedSprite.tint = objectSprite.color;
 
-            if(extendedSprite.blendMode !== objectSprite.blendMode) extendedSprite.blendMode = objectSprite.blendMode;
+            const blendMode = SpriteUtilities.toPixiBlendMode(objectSprite.blendMode);
+
+            if(extendedSprite.blendMode !== blendMode) extendedSprite.blendMode = blendMode;
 
             if(extendedSprite.texture !== objectSprite.texture) extendedSprite.setTexture(objectSprite.texture);
 
@@ -670,10 +670,10 @@ export class RoomSpriteCanvas implements IRoomRenderingCanvas
         extendedSprite.y = sortableSprite.y;
         extendedSprite.offsetX = sprite.offsetX;
         extendedSprite.offsetY = sprite.offsetY;
-        extendedSprite.name = sprite.name;
+        extendedSprite.label = sprite.name;
         extendedSprite.varyingDepth = sprite.varyingDepth;
         extendedSprite.clickHandling = sprite.clickHandling;
-        extendedSprite.blendMode = sprite.blendMode;
+        extendedSprite.blendMode = SpriteUtilities.toPixiBlendMode(sprite.blendMode);
         extendedSprite.filters = sprite.filters;
 
         extendedSprite.setTexture(sprite.texture);
@@ -1005,8 +1005,9 @@ export class RoomSpriteCanvas implements IRoomRenderingCanvas
             height: this._display.height
         });
 
-        PixiApplicationProxy.instance.renderer.render(this._display, {
-            renderTexture,
+        PixiApplicationProxy.instance.renderer.render({
+            container: this._display,
+            target: renderTexture,
             clear: true,
             transform: new Matrix(1, 0, 0, 1, -(bounds.x), -(bounds.y))
         });
@@ -1202,12 +1203,12 @@ export class RoomSpriteCanvas implements IRoomRenderingCanvas
         return this._geometry;
     }
 
-    public get master(): DisplayObject
+    public get master(): Container
     {
         return this._master;
     }
 
-    public get display(): DisplayObject
+    public get display(): Container
     {
         return this._display;
     }

@@ -1,4 +1,4 @@
-import { Resource, Texture } from '@pixi/core';
+import { TextureSource, Texture } from 'pixi.js';
 import { GetAssetManager, IGraphicAsset, IObjectVisualizationData, IRoomGeometry, RoomObjectVariable, RoomObjectVisualizationType } from '../../../../../api';
 import { AnimationData, AnimationStateData, DirectionData, LayerData } from '../data';
 import { FurnitureAnimatedVisualization, FurnitureVisualizationData } from '../furniture';
@@ -587,7 +587,7 @@ export class PetVisualization extends FurnitureAnimatedVisualization
         return posture;
     }
 
-    public getPetAdditionAsset(name: string): Texture<Resource>
+    public getPetAdditionAsset(name: string): Texture<TextureSource>
     {
         return GetAssetManager().getTexture(name);
     }

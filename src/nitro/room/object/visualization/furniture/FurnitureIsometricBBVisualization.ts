@@ -1,5 +1,5 @@
-import { RenderTexture, Resource, Texture } from '@pixi/core';
-import { Matrix } from '@pixi/math';
+import { RenderTexture, TextureSource, Texture } from 'pixi.js';
+import { Matrix } from 'pixi.js';
 import { GetAssetManager, IGraphicAsset } from '../../../../../api';
 import { NitroSprite, PixiApplicationProxy } from '../../../../../pixi-proxy';
 import { FurnitureBBVisualization } from './FurnitureBBVisualization';
@@ -66,8 +66,9 @@ export class FurnitureIsometricBBVisualization extends FurnitureBBVisualization
                 height: (asset.height + matrix.ty)
             });
 
-            PixiApplicationProxy.instance.renderer.render(sprite, {
-                renderTexture,
+            PixiApplicationProxy.instance.renderer.render({
+                container: sprite,
+                target: renderTexture,
                 clear: true,
                 transform: matrix
             });
@@ -79,7 +80,7 @@ export class FurnitureIsometricBBVisualization extends FurnitureBBVisualization
         this._needsTransform = false;
     }
 
-    protected generateTransformedImage(texture: Texture<Resource>, asset: IGraphicAsset): void
+    protected generateTransformedImage(texture: Texture<TextureSource>, asset: IGraphicAsset): void
     {
         const scale = 1.1;
         const matrix = new Matrix();
@@ -120,8 +121,9 @@ export class FurnitureIsometricBBVisualization extends FurnitureBBVisualization
             height: (asset.height + matrix.ty)
         });
 
-        PixiApplicationProxy.instance.renderer.render(sprite, {
-            renderTexture,
+        PixiApplicationProxy.instance.renderer.render({
+            container: sprite,
+            target: renderTexture,
             clear: true,
             transform: matrix
         });

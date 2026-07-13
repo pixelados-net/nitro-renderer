@@ -1,10 +1,10 @@
-import { RenderTexture, Resource, Texture } from '@pixi/core';
-import { Container, DisplayObject } from '@pixi/display';
-import { Matrix, Point, Rectangle } from '@pixi/math';
+import { RenderTexture, TextureSource, Texture, Ticker } from 'pixi.js';
+import { Container } from 'pixi.js';
+import { Matrix, Point, Rectangle } from 'pixi.js';
 import { IConnection, IDisposable, IFurnitureStackingHeightMap, IGetImageListener, IImageResult, ILegacyWallGeometry, IMessageComposer, INitroCommunicationManager, INitroEvent, IObjectData, IPetColorResult, IPetCustomPart, IRoomContentListener, IRoomContentLoader, IRoomCreator, IRoomEngine, IRoomEngineServices, IRoomGeometry, IRoomInstance, IRoomManager, IRoomManagerListener, IRoomObject, IRoomObjectController, IRoomObjectLogicFactory, IRoomObjectVisualizationFactory, IRoomRenderer, IRoomRendererFactory, IRoomRenderingCanvas, IRoomSessionManager, ISelectedRoomObjectData, ISessionDataManager, ITileObjectMap, IUpdateReceiver, IVector3D, LegacyDataType, MouseEventType, NitroConfiguration, NitroLogger, ObjectDataFactory, RoomControllerLevel, RoomObjectCategory, RoomObjectUserType, RoomObjectVariable, ToolbarIconEnum, Vector3d } from '../../api';
 import { NitroManager } from '../../core';
 import { BadgeImageReadyEvent, NitroToolbarAnimateIconEvent, RoomBackgroundColorEvent, RoomDragEvent, RoomEngineEvent, RoomEngineObjectEvent, RoomObjectEvent, RoomObjectFurnitureActionEvent, RoomObjectMouseEvent, RoomSessionEvent, RoomToObjectOwnAvatarMoveEvent } from '../../events';
-import { GetTicker, GetTickerTime, NitroSprite, TextureUtils } from '../../pixi-proxy';
+import { GetTicker, GetTickerTime, NitroContainer, NitroSprite, TextureUtils } from '../../pixi-proxy';
 import { NumberBank, RoomEnterEffect, RoomGeometry, RoomInstance, RoomObjectUpdateMessage, RoomRendererFactory } from '../../room';
 import { PetFigureData } from '../avatar';
 import { RenderRoomMessageComposer, RenderRoomThumbnailMessageComposer } from '../communication';
@@ -430,7 +430,7 @@ export class RoomEngine extends NitroManager implements IRoomEngine, IRoomCreato
         return instance;
     }
 
-    public getRoomInstanceDisplay(roomId: number, id: number, width: number, height: number, scale: number): DisplayObject
+    public getRoomInstanceDisplay(roomId: number, id: number, width: number, height: number, scale: number): Container
     {
         const instance = this.getRoomInstance(roomId);
 
@@ -494,9 +494,9 @@ export class RoomEngine extends NitroManager implements IRoomEngine, IRoomCreato
 
             if(displayObject)
             {
-                const overlay = new NitroSprite(Texture.EMPTY);
+                const overlay = new NitroContainer();
 
-                overlay.name = RoomEngine.OVERLAY;
+                overlay.label = RoomEngine.OVERLAY;
                 overlay.eventMode = 'none';
 
                 displayObject.addChild(overlay);
@@ -805,8 +805,10 @@ export class RoomEngine extends NitroManager implements IRoomEngine, IRoomCreato
         if(!document.hidden) this.update(1, true);
     }
 
-    public update(time: number, update: boolean = false): void
+    public update(time: number | Ticker, update: boolean = false): void
     {
+        if(typeof time !== 'number') time = time.deltaTime;
+
         if(!this._roomManager) return;
 
         time = GetTickerTime();
@@ -2664,7 +2666,7 @@ export class RoomEngine extends NitroManager implements IRoomEngine, IRoomCreato
         this._roomObjectEventHandler.cancelRoomObjectInsert(this._activeRoomId);
     }
 
-    private addOverlayIconSprite(k: NitroSprite, _arg_2: string, _arg_3: Texture<Resource>, scale: number = 1): NitroSprite
+    private addOverlayIconSprite(k: Container, _arg_2: string, _arg_3: Texture<TextureSource>, scale: number = 1): NitroSprite
     {
         if(!k || !_arg_3) return;
 
@@ -2674,7 +2676,7 @@ export class RoomEngine extends NitroManager implements IRoomEngine, IRoomCreato
 
         sprite = new NitroSprite(_arg_3);
 
-        sprite.name = _arg_2;
+        sprite.label = _arg_2;
 
         sprite.scale.set(scale);
 
@@ -3232,7 +3234,7 @@ export class RoomEngine extends NitroManager implements IRoomEngine, IRoomCreato
         this.removeOverlayIconSprite(sprite, RoomEngine.OBJECT_ICON_SPRITE);
     }
 
-    private getRenderingCanvasOverlay(k: IRoomRenderingCanvas): NitroSprite
+    private getRenderingCanvasOverlay(k: IRoomRenderingCanvas): NitroContainer
     {
         if(!k) return null;
 
@@ -3240,10 +3242,10 @@ export class RoomEngine extends NitroManager implements IRoomEngine, IRoomCreato
 
         if(!displayObject) return null;
 
-        return ((displayObject.getChildByName(RoomEngine.OVERLAY) as NitroSprite) || null);
+        return ((displayObject.getChildByLabel(RoomEngine.OVERLAY) as NitroContainer) || null);
     }
 
-    private removeOverlayIconSprite(k: NitroSprite, _arg_2: string): boolean
+    private removeOverlayIconSprite(k: Container, _arg_2: string): boolean
     {
         if(!k) return false;
 
@@ -3255,7 +3257,7 @@ export class RoomEngine extends NitroManager implements IRoomEngine, IRoomCreato
 
             if(child)
             {
-                if(child.name === _arg_2)
+                if(child.label === _arg_2)
                 {
                     k.removeChildAt(index);
 
@@ -3278,7 +3280,7 @@ export class RoomEngine extends NitroManager implements IRoomEngine, IRoomCreato
         return false;
     }
 
-    private getOverlayIconSprite(k: NitroSprite, _arg_2: string): NitroSprite
+    private getOverlayIconSprite(k: Container, _arg_2: string): NitroSprite
     {
         if(!k) return null;
 
@@ -3290,7 +3292,7 @@ export class RoomEngine extends NitroManager implements IRoomEngine, IRoomCreato
 
             if(child)
             {
-                if(child.name === _arg_2) return child;
+                if(child.label === _arg_2) return child;
             }
 
             index--;

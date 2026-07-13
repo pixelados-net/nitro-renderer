@@ -1,6 +1,6 @@
-import { RenderTexture } from '@pixi/core';
-import { DisplayObject } from '@pixi/display';
-import { Point, Rectangle } from '@pixi/math';
+import { RenderTexture } from 'pixi.js';
+import { Container } from 'pixi.js';
+import { Point, Rectangle } from 'pixi.js';
 import { INitroManager } from '../../common';
 import { IRoomGeometry, IRoomManager, IRoomObject, IRoomObjectController, IRoomObjectLogicFactory, IRoomObjectVisualizationFactory, IRoomRendererFactory, IRoomRenderingCanvas, IVector3D } from '../../room';
 import { IPetCustomPart } from '../avatar';
@@ -19,7 +19,7 @@ export interface IRoomEngine extends INitroManager
     disableUpdate(flag: boolean): void;
     runUpdate(): void;
     createRoomInstance(roomId: number, roomMap: IRoomMapData): void;
-    getRoomInstanceDisplay(roomId: number, id: number, width: number, height: number, scale: number): DisplayObject;
+    getRoomInstanceDisplay(roomId: number, id: number, width: number, height: number, scale: number): Container;
     setRoomInstanceRenderingCanvasScale(roomId: number, canvasId: number, scale: number, point?: Point, offsetPoint?: Point, override?: boolean, asDelta?: boolean): void;
     setRoomInstanceRenderingCanvasMask(roomId: number, canvasId: number, flag: boolean): void;
     getRoomInstanceRenderingCanvas(roomId: number, canvasId?: number): IRoomRenderingCanvas;

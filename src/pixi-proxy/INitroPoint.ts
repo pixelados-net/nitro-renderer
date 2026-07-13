@@ -1,3 +1,3 @@
-import { IPoint } from '@pixi/math';
+import { PointData } from 'pixi.js';
 
-export type INitroPoint = IPoint
+export type INitroPoint = PointData

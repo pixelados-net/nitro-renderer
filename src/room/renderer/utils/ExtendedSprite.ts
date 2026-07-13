@@ -1,7 +1,6 @@
-import { BLEND_MODES } from '@pixi/constants';
-import { BaseTexture, Resource, Texture } from '@pixi/core';
-import { Point } from '@pixi/math';
-import { Sprite } from '@pixi/sprite';
+import { Texture, TextureSource } from 'pixi.js';
+import { Point } from 'pixi.js';
+import { Sprite } from 'pixi.js';
 import { AlphaTolerance } from '../../../api';
 import { TextureUtils } from '../../../pixi-proxy';
 
@@ -17,9 +16,14 @@ export class ExtendedSprite extends Sprite
     private _pairedSpriteId: number;
     private _pairedSpriteUpdateCounter: number;
 
-    constructor(texture: Texture<Resource> = null)
+    constructor(texture: Texture<TextureSource> = null)
     {
         super(texture);
+
+        // Room sprites may carry an auxiliary visualization container. Pixi 8
+        // defaults view objects to leaf nodes, so opt this compatibility
+        // wrapper into container behavior explicitly.
+        this.allowChildren = true;
 
         this._offsetX = 0;
         this._offsetY = 0;
@@ -42,14 +46,7 @@ export class ExtendedSprite extends Sprite
         return true;
     }
 
-    public calculateVertices(): void
-    {
-        if(!this.texture.orig) return;
-
-        super.calculateVertices();
-    }
-
-    public setTexture(texture: Texture<Resource>): void
+    public setTexture(texture: Texture<TextureSource>): void
     {
         if(!texture) texture = Texture.EMPTY;
 
@@ -75,17 +72,17 @@ export class ExtendedSprite extends Sprite
 
         if(!(sprite instanceof Sprite)) return false;
 
-        if((sprite.texture === Texture.EMPTY) || (sprite.blendMode !== BLEND_MODES.NORMAL)) return;
+        if((sprite.texture === Texture.EMPTY) || (sprite.blendMode !== 'normal')) return;
 
         const texture = sprite.texture;
-        const baseTexture = texture.baseTexture;
+        const baseTexture = texture.source;
 
-        if(!texture || !baseTexture || !baseTexture.valid) return false;
+        if(!texture || !baseTexture || baseTexture.destroyed || !baseTexture.width || !baseTexture.height) return false;
 
         const x = (point.x * sprite.scale.x);
         const y = (point.y * sprite.scale.y);
 
-        if(!sprite.getLocalBounds().contains(x, y)) return false;
+        if(!sprite.getLocalBounds().rectangle.contains(x, y)) return false;
 
         //@ts-ignore
         if(!baseTexture.hitMap)
@@ -108,18 +105,18 @@ export class ExtendedSprite extends Sprite
         dx = (Math.round(dx) * baseTexture.resolution);
         dy = (Math.round(dy) * baseTexture.resolution);
 
-        const ind = (dx + dy * baseTexture.realWidth);
+        const ind = (dx + dy * baseTexture.pixelWidth);
         const ind1 = ind % 32;
         const ind2 = ind / 32 | 0;
 
         return (hitMap[ind2] & (1 << ind1)) !== 0;
     }
 
-    private static generateHitMap(baseTexture: BaseTexture): boolean
+    private static generateHitMap(baseTexture: TextureSource): boolean
     {
         if(!baseTexture) return false;
 
-        const texture = new Texture(baseTexture);
+        const texture = new Texture({ source: baseTexture });
         const sprite = new Sprite(texture);
         const pixels = TextureUtils.getPixels(sprite);
         const width = baseTexture.width;

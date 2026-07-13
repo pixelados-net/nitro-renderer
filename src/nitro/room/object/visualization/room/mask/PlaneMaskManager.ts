@@ -1,6 +1,6 @@
-﻿import { RenderTexture } from '@pixi/core';
-import { Matrix, Point } from '@pixi/math';
-import { Sprite } from '@pixi/sprite';
+﻿import { RenderTexture } from 'pixi.js';
+import { Matrix, Point } from 'pixi.js';
+import { Sprite } from 'pixi.js';
 import { IAssetPlaneMaskData, IAssetPlaneTextureBitmap, IGraphicAssetCollection, IVector3D } from '../../../../../../api';
 import { PixiApplicationProxy } from '../../../../../../pixi-proxy';
 import { PlaneMask } from './PlaneMask';
@@ -187,8 +187,9 @@ export class PlaneMaskManager
         matrix.scale(xScale, ySkew);
         matrix.translate(tx, ty);
 
-        PixiApplicationProxy.instance.renderer.render(new Sprite(texture), {
-            renderTexture: canvas,
+        PixiApplicationProxy.instance.renderer.render({
+            container: new Sprite(texture),
+            target: canvas,
             clear: false,
             transform: matrix
         });

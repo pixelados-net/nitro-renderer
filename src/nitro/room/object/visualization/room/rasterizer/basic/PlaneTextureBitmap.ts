@@ -1,18 +1,18 @@
-import { Resource, Texture } from '@pixi/core';
+import { TextureSource, Texture } from 'pixi.js';
 
 export class PlaneTextureBitmap
 {
     public static MIN_NORMAL_COORDINATE_VALUE: number = -1;
     public static MAX_NORMAL_COORDINATE_VALUE: number = 1;
 
-    private _bitmap: Texture<Resource>;
+    private _bitmap: Texture<TextureSource>;
     private _normalMinX: number;
     private _normalMaxX: number;
     private _normalMinY: number;
     private _normalMaxY: number;
     private _assetName: string;
 
-    constructor(bitmap: Texture<Resource>, normalMinX: number = -1, normalMaxX: number = 1, normalMinY: number = -1, normalMaxY: number = 1, assetName: string = null)
+    constructor(bitmap: Texture<TextureSource>, normalMinX: number = -1, normalMaxX: number = 1, normalMinY: number = -1, normalMaxY: number = 1, assetName: string = null)
     {
         this._bitmap = bitmap;
         this._normalMinX = normalMinX;
@@ -22,7 +22,7 @@ export class PlaneTextureBitmap
         this._assetName = assetName;
     }
 
-    public get bitmap(): Texture<Resource>
+    public get bitmap(): Texture<TextureSource>
     {
         return this._bitmap;
     }

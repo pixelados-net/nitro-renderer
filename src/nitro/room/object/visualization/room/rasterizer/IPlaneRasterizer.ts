@@ -1,4 +1,4 @@
-﻿import { RenderTexture } from '@pixi/core';
+﻿import { RenderTexture } from 'pixi.js';
 import { IVector3D } from '../../../../../../api';
 import { PlaneTextureCache } from '../../../../../../pixi-proxy';
 import { PlaneBitmapData } from '../utils';

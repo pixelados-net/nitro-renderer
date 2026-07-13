@@ -1,4 +1,4 @@
-import { BaseTexture, Texture } from '@pixi/core';
+import { BufferImageSource, Texture } from 'pixi.js';
 import { decompressFrames, parseGIF } from 'gifuct-js';
 import { GetAssetManager, IAssetData, IRoomGeometry, MapDataType, MouseEventType, RoomObjectVariable, RoomWidgetEnumItemExtradataParameter } from '../../../../../api';
 import { RoomObjectRoomAdEvent, RoomSpriteMouseEvent } from '../../../../../events';
@@ -191,9 +191,13 @@ export class FurnitureRoomBrandingLogic extends FurnitureLogic
                             }
                         }
 
-                        const baseTexture = BaseTexture.fromBuffer(frame, width, height);
+                        const textureSource = new BufferImageSource({
+                            resource: frame,
+                            width,
+                            height
+                        });
 
-                        textures.push(new Texture(baseTexture));
+                        textures.push(new Texture({ source: textureSource }));
                         durations.push(frames[ind].delay);
                     }
 

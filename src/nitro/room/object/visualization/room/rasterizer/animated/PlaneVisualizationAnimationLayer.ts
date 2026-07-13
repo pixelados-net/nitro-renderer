@@ -1,5 +1,5 @@
-﻿import { RenderTexture } from '@pixi/core';
-import { Sprite } from '@pixi/sprite';
+﻿import { RenderTexture } from 'pixi.js';
+import { Sprite } from 'pixi.js';
 import { IDisposable, IGraphicAssetCollection, IVector3D } from '../../../../../../../api';
 import { PlaneTextureCache } from '../../../../../../../pixi-proxy';
 import { AnimationItem } from './AnimationItem';

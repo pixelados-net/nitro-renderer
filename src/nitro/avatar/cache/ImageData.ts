@@ -1,17 +1,17 @@
-﻿import { Resource, Texture } from '@pixi/core';
-import { Container } from '@pixi/display';
-import { Point, Rectangle } from '@pixi/math';
+﻿import { TextureSource, Texture } from 'pixi.js';
+import { Container } from 'pixi.js';
+import { Point, Rectangle } from 'pixi.js';
 
 export class ImageData
 {
-    private _texture: Texture<Resource>;
+    private _texture: Texture<TextureSource>;
     private _container: Container;
     private _rect: Rectangle;
     private _regPoint: Point;
     private _flipH: boolean;
     private _colorTransform: number;
 
-    constructor(texture: Texture<Resource>, rectangle: Rectangle, _arg_3: Point, flipH: boolean, color: number, container: Container = null)
+    constructor(texture: Texture<TextureSource>, rectangle: Rectangle, _arg_3: Point, flipH: boolean, color: number, container: Container = null)
     {
         this._texture = texture;
         this._container = container;
@@ -30,7 +30,7 @@ export class ImageData
         this._colorTransform = null;
     }
 
-    public get texture(): Texture<Resource>
+    public get texture(): Texture<TextureSource>
     {
         return this._texture;
     }

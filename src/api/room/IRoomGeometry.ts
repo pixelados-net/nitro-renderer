@@ -1,4 +1,4 @@
-import { Point } from '@pixi/math';
+import { Point } from 'pixi.js';
 import { IVector3D } from './IVector3D';
 
 export interface IRoomGeometry

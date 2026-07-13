@@ -1,7 +1,7 @@
-﻿import { Resource, Texture } from '@pixi/core';
-import { Graphics } from '@pixi/graphics';
-import { Matrix } from '@pixi/math';
-import { Sprite } from '@pixi/sprite';
+﻿import { TextureSource, Texture } from 'pixi.js';
+import { Graphics } from 'pixi.js';
+import { Matrix } from 'pixi.js';
+import { Sprite } from 'pixi.js';
 import { PixiApplicationProxy, TextureUtils } from '../../pixi-proxy';
 
 export class Rasterizer
@@ -64,7 +64,7 @@ export class Rasterizer
     //     k.unlock();
     // }
 
-    public static getFlipHBitmapData(k: Texture<Resource>): Texture<Resource>
+    public static getFlipHBitmapData(k: Texture<TextureSource>): Texture<TextureSource>
     {
         if(!k) return null;
 
@@ -75,8 +75,9 @@ export class Rasterizer
         matrix.scale(-1, 1);
         matrix.translate(k.width, 0);
 
-        PixiApplicationProxy.instance.renderer.render(new Sprite(k), {
-            renderTexture,
+        PixiApplicationProxy.instance.renderer.render({
+            container: new Sprite(k),
+            target: renderTexture,
             clear: true,
             transform: matrix
         });
@@ -84,7 +85,7 @@ export class Rasterizer
         return renderTexture;
     }
 
-    public static getFlipVBitmapData(k: Texture<Resource>): Texture<Resource>
+    public static getFlipVBitmapData(k: Texture<TextureSource>): Texture<TextureSource>
     {
         if(!k) return null;
 
@@ -96,17 +97,16 @@ export class Rasterizer
         const graphic = new Graphics();
 
         graphic
-            .beginTextureFill({
+            .rect(0, 0, k.width, k.height)
+            .fill({
                 texture: k,
                 matrix
-            })
-            .drawRect(0, 0, k.width, k.height)
-            .endFill();
+            });
 
         return TextureUtils.generateTexture(graphic);
     }
 
-    public static getFlipHVBitmapData(k: Texture<Resource>): Texture<Resource>
+    public static getFlipHVBitmapData(k: Texture<TextureSource>): Texture<TextureSource>
     {
         if(!k) return null;
 
@@ -118,12 +118,11 @@ export class Rasterizer
         const graphic = new Graphics();
 
         graphic
-            .beginTextureFill({
+            .rect(0, 0, k.width, k.height)
+            .fill({
                 texture: k,
                 matrix
-            })
-            .drawRect(0, 0, k.width, k.height)
-            .endFill();
+            });
 
         return TextureUtils.generateTexture(graphic);
     }

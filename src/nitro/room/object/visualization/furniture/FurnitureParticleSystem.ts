@@ -1,7 +1,7 @@
-import { RenderTexture, Texture } from '@pixi/core';
-import { AlphaFilter } from '@pixi/filter-alpha';
-import { Graphics } from '@pixi/graphics';
-import { Matrix } from '@pixi/math';
+import { RenderTexture, Texture } from 'pixi.js';
+import { AlphaFilter } from 'pixi.js';
+import { Graphics } from 'pixi.js';
+import { Matrix } from 'pixi.js';
 import { AdvancedMap, IAdvancedMap, IGraphicAsset, IParticleSystem, IRoomObjectSprite } from '../../../../../api';
 import { NitroPoint, NitroSprite, PixiApplicationProxy } from '../../../../../pixi-proxy';
 import { Vector3D } from '../../../../avatar';
@@ -189,8 +189,9 @@ export class FurnitureParticleSystem
 
                         sprite.filters = [this._particleColorTransform];
 
-                        PixiApplicationProxy.instance.renderer.render(sprite, {
-                            renderTexture: this._canvasTexture,
+                        PixiApplicationProxy.instance.renderer.render({
+                            container: sprite,
+                            target: this._canvasTexture,
                             transform: this._translationMatrix,
                             clear: false
                         });
@@ -203,8 +204,9 @@ export class FurnitureParticleSystem
                         sprite.x = point.x;
                         sprite.y = point.y;
 
-                        PixiApplicationProxy.instance.renderer.render(sprite, {
-                            renderTexture: this._canvasTexture,
+                        PixiApplicationProxy.instance.renderer.render({
+                            container: sprite,
+                            target: this._canvasTexture,
                             clear: false
                         });
                     }
@@ -219,8 +221,9 @@ export class FurnitureParticleSystem
                     sprite.width = 2;
                     sprite.height = 2;
 
-                    PixiApplicationProxy.instance.renderer.render(sprite, {
-                        renderTexture: this._canvasTexture,
+                    PixiApplicationProxy.instance.renderer.render({
+                        container: sprite,
+                        target: this._canvasTexture,
                         clear: false
                     });
                 }
@@ -324,8 +327,9 @@ export class FurnitureParticleSystem
         }
         else
         {
-            PixiApplicationProxy.instance.renderer.render(this._emptySprite, {
-                renderTexture: this._canvasTexture,
+            PixiApplicationProxy.instance.renderer.render({
+                container: this._emptySprite,
+                target: this._canvasTexture,
                 clear: true
             });
         }

@@ -1,7 +1,4 @@
-import { Application, IApplicationOptions } from '@pixi/app';
-import { SCALE_MODES } from '@pixi/constants';
-import { BaseTexture, TextureGCSystem } from '@pixi/core';
-import { settings } from '@pixi/settings';
+import { Application, TextureSource } from 'pixi.js';
 import { IAvatarRenderManager, IEventDispatcher, ILinkEventTracker, INitroCommunicationManager, INitroCore, INitroLocalizationManager, IRoomCameraWidgetManager, IRoomEngine, IRoomManager, IRoomSessionManager, ISessionDataManager, ISoundManager, NitroConfiguration, NitroLogger } from '../api';
 import { ConfigurationEvent, EventDispatcher, NitroCore } from '../core';
 import { NitroEvent, RoomEngineEvent } from '../events';
@@ -14,7 +11,6 @@ import { LegacyExternalInterface } from './externalInterface';
 import { GameMessageHandler } from './game';
 import { INitro } from './INitro';
 import { NitroLocalizationManager } from './localization';
-import './Plugins';
 import { LandscapeRasterizer, RoomEngine } from './room';
 import { RoomSessionManager, SessionDataManager } from './session';
 import { SoundManager } from './sound';
@@ -22,9 +18,7 @@ import { HabboWebTools } from './utils/HabboWebTools';
 
 LegacyExternalInterface.available;
 
-BaseTexture.defaultOptions.scaleMode = (!(window.devicePixelRatio % 1)) ? SCALE_MODES.NEAREST : SCALE_MODES.LINEAR;
-settings.ROUND_PIXELS = true;
-TextureGCSystem.defaultMaxIdle = 120;
+TextureSource.defaultOptions.scaleMode = (!(window.devicePixelRatio % 1)) ? 'nearest' : 'linear';
 
 export class Nitro implements INitro
 {
@@ -52,11 +46,11 @@ export class Nitro implements INitro
     private _isReady: boolean;
     private _isDisposed: boolean;
 
-    constructor(core: INitroCore, options?: Partial<IApplicationOptions>)
+    constructor(core: INitroCore, application: Application)
     {
         if(!Nitro.INSTANCE) Nitro.INSTANCE = this;
 
-        this._application = new PixiApplicationProxy(options);
+        this._application = application;
         this._core = core;
         this._events = new EventDispatcher();
         this._communication = new NitroCommunicationManager(core.communication);
@@ -81,7 +75,7 @@ export class Nitro implements INitro
         this._roomEngine.events.addEventListener(RoomEngineEvent.ENGINE_INITIALIZED, this.onRoomEngineReady);
     }
 
-    public static bootstrap(): void
+    public static async bootstrap(): Promise<void>
     {
         if(Nitro.INSTANCE)
         {
@@ -92,13 +86,17 @@ export class Nitro implements INitro
 
         const canvas = document.createElement('canvas');
 
-        const instance = new this(new NitroCore(), {
+        const application = await PixiApplicationProxy.create({
             autoDensity: false,
             width: window.innerWidth,
             height: window.innerHeight,
             resolution: window.devicePixelRatio,
-            view: canvas
+            canvas,
+            preference: 'webgl',
+            roundPixels: true,
+            gcMaxUnusedTime: 120000
         });
+        const instance = new this(new NitroCore(), application);
 
         canvas.addEventListener('webglcontextlost', () => instance.events.dispatchEvent(new NitroEvent(Nitro.WEBGL_CONTEXT_LOST)));
     }

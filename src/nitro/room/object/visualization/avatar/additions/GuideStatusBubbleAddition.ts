@@ -1,4 +1,4 @@
-import { Resource, Texture } from '@pixi/core';
+import { TextureSource, Texture } from 'pixi.js';
 import { AvatarAction, AvatarGuideStatus, IRoomObjectSprite } from '../../../../../../api';
 import { AvatarVisualization } from '../AvatarVisualization';
 import { IAvatarAddition } from './IAvatarAddition';
@@ -7,7 +7,7 @@ export class GuideStatusBubbleAddition implements IAvatarAddition
 {
     private _id: number;
     private _visualization: AvatarVisualization;
-    private _asset: Texture<Resource>;
+    private _asset: Texture<TextureSource>;
     private _relativeDepth: number;
     private _status: number;
 

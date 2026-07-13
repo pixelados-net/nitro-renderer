@@ -18,7 +18,7 @@ JavaScript/TypeScript library for rendering Nitro (Habbo rooms, furniture and av
 
 - A **standalone imaging entrypoint** that renders avatars, furniture and full rooms as images without a websocket connection or an emulator — ideal for CMS integrations, catalog tooling and admin panels.
 - **Avatar animation export** to sprite sheets and animated GIFs.
-- Modernized tooling (TypeScript 5, Vite 7, ESLint 9, PixiJS 7) with CI, tests and opt-in memory management.
+- Modernized tooling (TypeScript 5, Vite 7, ESLint 9, PixiJS 8) with CI, tests and opt-in memory management.
 
 ## Links
 

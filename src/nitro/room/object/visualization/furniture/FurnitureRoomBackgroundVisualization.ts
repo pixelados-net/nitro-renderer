@@ -1,4 +1,4 @@
-import { Resource, Texture } from '@pixi/core';
+import { TextureSource, Texture } from 'pixi.js';
 import { DirectionalOffsetData } from '../data';
 import { FurnitureBrandedImageVisualization } from './FurnitureBrandedImageVisualization';
 
@@ -6,7 +6,7 @@ export class FurnitureRoomBackgroundVisualization extends FurnitureBrandedImageV
 {
     private _imageOffset: DirectionalOffsetData;
 
-    protected imageReady(texture: Texture<Resource>, imageUrl: string): void
+    protected imageReady(texture: Texture<TextureSource>, imageUrl: string): void
     {
         super.imageReady(texture, imageUrl);
 

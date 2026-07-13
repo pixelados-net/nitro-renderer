@@ -1,4 +1,4 @@
-import { RenderTexture } from '@pixi/core';
+import { RenderTexture } from 'pixi.js';
 import { IMessageComposer } from '../../../../../api';
 import { TextureUtils } from '../../../../../pixi-proxy';
 

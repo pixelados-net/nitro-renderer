@@ -1,6 +1,5 @@
-import { BaseTexture } from '@pixi/core';
+import { ImageSource, TextureSource } from 'pixi.js';
 import { Data, inflate } from 'pako';
-import { ArrayBufferToBase64 } from './ArrayBufferToBase64';
 import { BinaryReader } from './BinaryReader';
 
 export class NitroBundle
@@ -8,9 +7,8 @@ export class NitroBundle
     private static TEXT_DECODER: TextDecoder = new TextDecoder('utf-8');
 
     private _jsonFile: Object = null;
-    private _image: string = null;
     private _imageData: Uint8Array = null;
-    private _baseTexture: BaseTexture = null;
+    private _textureSource: TextureSource = null;
 
     constructor(arrayBuffer: ArrayBuffer)
     {
@@ -38,10 +36,7 @@ export class NitroBundle
             }
             else
             {
-                const decompressed = inflate((buffer.toArrayBuffer() as Data));
-                const base64 = ArrayBufferToBase64((decompressed as unknown as ArrayBuffer));
-
-                this._baseTexture = new BaseTexture('data:image/png;base64,' + base64);
+                this._imageData = inflate((buffer.toArrayBuffer() as Data));
             }
 
             fileCount--;
@@ -53,8 +48,32 @@ export class NitroBundle
         return this._jsonFile;
     }
 
-    public get baseTexture(): BaseTexture
+    public async decodeTexture(): Promise<TextureSource>
     {
-        return this._baseTexture;
+        if(this._textureSource) return this._textureSource;
+
+        if(!this._imageData) return null;
+
+        const data = this._imageData;
+        const arrayBuffer = data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength) as ArrayBuffer;
+        const bitmap = await createImageBitmap(new Blob([arrayBuffer], { type: 'image/png' }));
+
+        this._textureSource = new ImageSource({
+            resource: bitmap,
+            autoGarbageCollect: false
+        });
+
+        return this._textureSource;
+    }
+
+    public get textureSource(): TextureSource
+    {
+        return this._textureSource;
+    }
+
+    /** @deprecated Use textureSource after awaiting decodeTexture(). */
+    public get baseTexture(): TextureSource
+    {
+        return this._textureSource;
     }
 }

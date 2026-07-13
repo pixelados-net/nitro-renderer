@@ -1,6 +1,6 @@
-import { Renderer, Resource, Texture } from '@pixi/core';
-import { Sprite } from '@pixi/sprite';
-import { PixiApplicationProxy, TextureUtils } from '../../pixi-proxy';
+import { BufferImageSource, Texture, TextureSource } from 'pixi.js';
+import { Sprite } from 'pixi.js';
+import { TextureUtils } from '../../pixi-proxy';
 
 export class GraphicAssetPalette
 {
@@ -23,7 +23,7 @@ export class GraphicAssetPalette
 
     }
 
-    public applyPalette(texture: Texture<Resource>): Texture<Resource>
+    public applyPalette(texture: Texture<TextureSource>): Texture<TextureSource>
     {
         const renderTexture = TextureUtils.createAndWriteRenderTexture(texture.width, texture.height, new Sprite(texture));
         const pixels = TextureUtils.getPixels(renderTexture);
@@ -39,14 +39,16 @@ export class GraphicAssetPalette
             pixels[i + 2] = paletteColor[2];
         }
 
-        const canvaGLTexture = renderTexture.baseTexture._glTextures['1']?.texture;
-        const gl = (PixiApplicationProxy.instance.renderer as Renderer)?.gl;
+        const textureSource = new BufferImageSource({
+            resource: pixels,
+            width: renderTexture.width,
+            height: renderTexture.height,
+            scaleMode: renderTexture.source.scaleMode
+        });
 
-        gl.bindTexture(gl.TEXTURE_2D, canvaGLTexture);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, renderTexture.width, renderTexture.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
-        gl.bindTexture(gl.TEXTURE_2D, null);
+        renderTexture.destroy(true);
 
-        return renderTexture;
+        return new Texture({ source: textureSource });
     }
 
     public get primaryColor(): number

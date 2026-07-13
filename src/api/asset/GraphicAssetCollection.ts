@@ -1,6 +1,4 @@
-import { BaseTexture, Resource, Texture } from '@pixi/core';
-import { Spritesheet } from '@pixi/spritesheet';
-import { Dict } from '@pixi/utils';
+import { Dict, Spritesheet, Texture, TextureSource } from 'pixi.js';
 import { GetTickerTime } from '../../pixi-proxy';
 import { GraphicAsset } from './GraphicAsset';
 import { GraphicAssetPalette } from './GraphicAssetPalette';
@@ -18,9 +16,9 @@ export class GraphicAssetCollection implements IGraphicAssetCollection
     private _referenceTimestamp: number;
 
     private _name: string;
-    private _baseTexture: BaseTexture;
+    private _textureSource: TextureSource;
     private _data: IAssetData;
-    private _textures: Map<string, Texture<Resource>>;
+    private _textures: Map<string, Texture<TextureSource>>;
     private _assets: Map<string, GraphicAsset>;
     private _palettes: Map<string, GraphicAssetPalette>;
     private _paletteAssetNames: string[];
@@ -30,7 +28,7 @@ export class GraphicAssetCollection implements IGraphicAssetCollection
         if(!data) throw new Error('invalid_collection');
 
         this._name = data.name;
-        this._baseTexture = ((spritesheet && spritesheet.baseTexture) || null);
+        this._textureSource = ((spritesheet && spritesheet.textureSource) || null);
         this._data = data;
         this._textures = new Map();
         this._assets = new Map();
@@ -170,7 +168,7 @@ export class GraphicAssetCollection implements IGraphicAssetCollection
         }
     }
 
-    private createAsset(name: string, source: string, texture: Texture<Resource>, flipH: boolean, flipV: boolean, x: number, y: number, usesPalette: boolean): boolean
+    private createAsset(name: string, source: string, texture: Texture<TextureSource>, flipH: boolean, flipV: boolean, x: number, y: number, usesPalette: boolean): boolean
     {
         if(this._assets.get(name)) return false;
 
@@ -181,7 +179,7 @@ export class GraphicAssetCollection implements IGraphicAssetCollection
         return true;
     }
 
-    private replaceAsset(name: string, source: string, texture: Texture<Resource>, flipH: boolean, flipV: boolean, x: number, y: number, usesPalette: boolean): boolean
+    private replaceAsset(name: string, source: string, texture: Texture<TextureSource>, flipH: boolean, flipV: boolean, x: number, y: number, usesPalette: boolean): boolean
     {
         const existing = this._assets.get(name);
 
@@ -238,7 +236,7 @@ export class GraphicAssetCollection implements IGraphicAssetCollection
         return asset;
     }
 
-    public getTexture(name: string): Texture<Resource>
+    public getTexture(name: string): Texture<TextureSource>
     {
         return this._textures.get(name);
     }
@@ -268,7 +266,7 @@ export class GraphicAssetCollection implements IGraphicAssetCollection
         return existing;
     }
 
-    public addAsset(name: string, texture: Texture<Resource>, override: boolean, x: number = 0, y: number = 0, flipH: boolean = false, flipV: boolean = false): boolean
+    public addAsset(name: string, texture: Texture<TextureSource>, override: boolean, x: number = 0, y: number = 0, flipH: boolean = false, flipV: boolean = false): boolean
     {
         if(!name || !texture) return false;
 
@@ -283,9 +281,11 @@ export class GraphicAssetCollection implements IGraphicAssetCollection
 
         if(override)
         {
-            existingTexture.baseTexture = texture.baseTexture;
-            existingTexture.frame = texture.frame;
-            existingTexture.trim = texture.trim;
+            existingTexture.source = texture.source;
+            existingTexture.frame.copyFrom(texture.frame);
+            existingTexture.orig.copyFrom(texture.orig);
+
+            if(existingTexture.trim && texture.trim) existingTexture.trim.copyFrom(texture.trim);
 
             existingTexture.updateUvs();
 
@@ -315,7 +315,7 @@ export class GraphicAssetCollection implements IGraphicAssetCollection
         existing.recycle();
     }
 
-    public getLibraryAsset(name: string): Texture<Resource>
+    public getLibraryAsset(name: string): Texture<TextureSource>
     {
         if(!name) return null;
 
@@ -328,7 +328,7 @@ export class GraphicAssetCollection implements IGraphicAssetCollection
         return texture;
     }
 
-    private addLibraryAsset(textures: Dict<Texture<Resource>>): void
+    private addLibraryAsset(textures: Dict<Texture<TextureSource>>): void
     {
         if(!textures) return;
 
@@ -370,9 +370,15 @@ export class GraphicAssetCollection implements IGraphicAssetCollection
         return this._name;
     }
 
-    public get baseTexture(): BaseTexture
+    /** @deprecated Use textureSource. */
+    public get baseTexture(): TextureSource
     {
-        return this._baseTexture;
+        return this._textureSource;
+    }
+
+    public get textureSource(): TextureSource
+    {
+        return this._textureSource;
     }
 
     public get data(): IAssetData

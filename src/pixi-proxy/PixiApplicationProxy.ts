@@ -1,17 +1,33 @@
-import { Application, IApplicationOptions } from '@pixi/app';
+import { Application, ApplicationOptions } from 'pixi.js';
 
 export class PixiApplicationProxy extends Application
 {
-    private static INSTANCE: Application = null;
+    private static INSTANCE: PixiApplicationProxy = null;
 
-    constructor(options?: Partial<IApplicationOptions>)
+    private constructor()
     {
-        super(options);
-
-        if(!PixiApplicationProxy.INSTANCE) PixiApplicationProxy.INSTANCE = this;
+        super();
     }
 
-    public static get instance(): Application
+    public static async create(options: Partial<ApplicationOptions> = {}): Promise<PixiApplicationProxy>
+    {
+        const application = new PixiApplicationProxy();
+
+        await application.init(options);
+
+        PixiApplicationProxy.INSTANCE = application;
+
+        return application;
+    }
+
+    public override destroy(...args: Parameters<Application['destroy']>): void
+    {
+        super.destroy(...args);
+
+        if(PixiApplicationProxy.INSTANCE === this) PixiApplicationProxy.INSTANCE = null;
+    }
+
+    public static get instance(): PixiApplicationProxy
     {
         return this.INSTANCE || null;
     }

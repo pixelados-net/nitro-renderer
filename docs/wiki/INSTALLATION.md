@@ -14,14 +14,14 @@ Two entrypoints are available:
 
 | Entrypoint | Contents |
 |---|---|
-| `@nitrots/nitro-renderer` | The full engine (client usage: `Nitro.bootstrap()`, managers, networking) |
+| `@nitrots/nitro-renderer` | The full engine (client usage: `await Nitro.bootstrap()`, managers, networking) |
 | `@nitrots/nitro-renderer/standalone` | Connection-less imaging facade — see [[STANDALONE-RENDERING]] |
 
 ## Requirements
 
 - Node 20+ for development.
 - A bundler that resolves TypeScript sources from `node_modules` (Vite does this out of the box).
-- PixiJS 7 peer environment (the library declares its own `@pixi/*` 7.4 dependencies).
+- PixiJS 8.19 (declared by the library as its `pixi.js` dependency).
 
 ## Local development
 
@@ -43,6 +43,19 @@ Available scripts:
 | `yarn test` | Runs the vitest suite |
 
 ## Linking against a local client
+
+For sibling repositories, use a durable file dependency so the client always
+builds against this checkout:
+
+```json
+{
+  "dependencies": {
+    "@nitrots/nitro-renderer": "file:../nitro-renderer"
+  }
+}
+```
+
+Alternatively, Yarn links can be used for temporary development:
 
 ```bash
 cd nitro-renderer

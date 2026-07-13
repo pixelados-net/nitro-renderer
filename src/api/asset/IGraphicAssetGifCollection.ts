@@ -1,8 +1,8 @@
-import { Resource, Texture } from '@pixi/core';
+import { TextureSource, Texture } from 'pixi.js';
 
 export interface IGraphicAssetGifCollection
 {
     name: string;
-    textures: Texture<Resource>[];
+    textures: Texture<TextureSource>[];
     durations: number[];
 }

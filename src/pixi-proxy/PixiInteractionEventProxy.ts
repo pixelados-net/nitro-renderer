@@ -1,4 +1,4 @@
-import { FederatedPointerEvent } from '@pixi/events';
+import { FederatedPointerEvent } from 'pixi.js';
 
 export class PixiInteractionEventProxy extends FederatedPointerEvent
 {}

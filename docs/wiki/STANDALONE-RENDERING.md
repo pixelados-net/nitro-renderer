@@ -115,7 +115,7 @@ imaging.dispose(); // releases the renderer, managers and listeners
 
 ## Coexistence with the full client
 
-If `Nitro.bootstrap()` already ran on the same page, `createNitroImaging` **reuses** the existing Pixi `Application` instead of creating a new one. The client flow is unaffected.
+If `await Nitro.bootstrap()` already completed on the same page, `createNitroImaging` **reuses** the existing Pixi `Application` instead of creating a new one. The client flow is unaffected.
 
 ## Current limitations
 

@@ -1,7 +1,7 @@
-import { Texture } from '@pixi/core';
-import { Matrix, Point, Rectangle } from '@pixi/math';
+import { Texture } from 'pixi.js';
+import { Matrix, Point, Rectangle } from 'pixi.js';
 import { AvatarDirectionAngle, AvatarFigurePartType, AvatarScaleType, GeometryType, IActiveActionData, IAvatarImage, RoomObjectSpriteData } from '../../../api';
-import { GetTickerTime, NitroContainer, NitroSprite } from '../../../pixi-proxy';
+import { GetTickerTime, NitroContainer, NitroSprite, TextureUtils } from '../../../pixi-proxy';
 import { AssetAliasCollection } from '../alias';
 import { AvatarAnimationLayerData } from '../animation';
 import { AvatarImageBodyPartContainer } from '../AvatarImageBodyPartContainer';
@@ -404,7 +404,7 @@ export class AvatarImageCache
                     {
                         const texture = asset.texture;
 
-                        if(!texture || !texture.valid || !texture.baseTexture)
+                        if(!TextureUtils.isValid(texture))
                         {
                             isCacheable = false;
                         }
@@ -530,11 +530,11 @@ export class AvatarImageCache
             const sprite = new NitroSprite(texture);
 
             sprite.tint = color;
-            sprite.transform.setFromMatrix(this._matrix);
+            sprite.setFromMatrix(this._matrix);
 
             container.addChild(sprite);
         }
 
-        return new ImageData(null, container.getLocalBounds(), point, isFlipped, null, container);
+        return new ImageData(null, container.getLocalBounds().rectangle, point, isFlipped, null, container);
     }
 }

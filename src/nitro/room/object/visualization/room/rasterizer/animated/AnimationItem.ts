@@ -1,4 +1,4 @@
-﻿import { Point } from '@pixi/math';
+﻿import { Point } from 'pixi.js';
 import { IGraphicAsset } from '../../../../../../../api';
 
 export class AnimationItem

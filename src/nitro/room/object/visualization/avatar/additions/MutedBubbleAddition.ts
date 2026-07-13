@@ -1,4 +1,4 @@
-import { Resource, Texture } from '@pixi/core';
+import { TextureSource, Texture } from 'pixi.js';
 import { AvatarAction, IRoomObjectSprite } from '../../../../../../api';
 import { AvatarVisualization } from '../AvatarVisualization';
 import { IAvatarAddition } from './IAvatarAddition';
@@ -7,7 +7,7 @@ export class MutedBubbleAddition implements IAvatarAddition
 {
     private _id: number;
     private _visualization: AvatarVisualization;
-    private _asset: Texture<Resource>;
+    private _asset: Texture<TextureSource>;
 
     constructor(id: number, visualization: AvatarVisualization)
     {

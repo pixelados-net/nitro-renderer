@@ -15,7 +15,7 @@ src/
 
 ## Full-client lifecycle
 
-1. `Nitro.bootstrap()` creates the canvas, the Pixi `Application` and the `Nitro.instance` singleton.
+1. `await Nitro.bootstrap()` asynchronously creates the canvas, initializes the Pixi 8 `Application` and publishes the `Nitro.instance` singleton.
 2. Configuration loads (`NitroConfiguration`) and fires `ConfigurationEvent.LOADED`.
 3. The websocket connection is established (`communication`) — **required by `Nitro.init()`**.
 4. `Nitro.init()` initializes the managers in order: avatar → sound → session → `RoomEngine`.
@@ -36,7 +36,7 @@ src/
 
 ## Asset pipeline
 
-Assets are downloaded over HTTP as `.nitro` bundles (zlib-compressed archive containing a spritesheet JSON plus a PNG). `AssetManager` (via `GetAssetManager()`) keeps every collection in memory; downloads run in parallel (8 concurrent connections).
+Assets are downloaded over HTTP as `.nitro` bundles (zlib-compressed archive containing a spritesheet JSON plus a PNG). PNG bytes are decoded with `createImageBitmap` and wrapped in a Pixi 8 `ImageSource`, avoiding the old base64 round trip. `AssetManager` (via `GetAssetManager()`) keeps every collection in memory; downloads run in parallel (8 concurrent connections).
 
 ### Memory management
 

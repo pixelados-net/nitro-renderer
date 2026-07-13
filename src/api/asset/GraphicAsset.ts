@@ -1,6 +1,6 @@
-import { Resource, Texture } from '@pixi/core';
-import { Rectangle } from '@pixi/math';
-import { Sprite } from '@pixi/sprite';
+import { TextureSource, Texture } from 'pixi.js';
+import { Rectangle } from 'pixi.js';
+import { Sprite } from 'pixi.js';
 import { TextureUtils } from '../../pixi-proxy';
 import { IGraphicAsset } from './IGraphicAsset';
 
@@ -10,7 +10,7 @@ export class GraphicAsset implements IGraphicAsset
 
     private _name: string;
     private _source: string;
-    private _texture: Texture<Resource>;
+    private _texture: Texture<TextureSource>;
     private _usesPalette: boolean;
     private _x: number;
     private _y: number;
@@ -21,7 +21,7 @@ export class GraphicAsset implements IGraphicAsset
     private _rectangle: Rectangle;
     private _initialized: boolean;
 
-    public static createAsset(name: string, source: string, texture: Texture<Resource>, x: number, y: number, flipH: boolean = false, flipV: boolean = false, usesPalette: boolean = false): GraphicAsset
+    public static createAsset(name: string, source: string, texture: Texture<TextureSource>, x: number, y: number, flipH: boolean = false, flipV: boolean = false, usesPalette: boolean = false): GraphicAsset
     {
         const graphicAsset = (GraphicAsset.GRAPHIC_POOL.length ? GraphicAsset.GRAPHIC_POOL.pop() : new GraphicAsset());
 
@@ -81,7 +81,7 @@ export class GraphicAsset implements IGraphicAsset
         return this._source;
     }
 
-    public get texture(): Texture<Resource>
+    public get texture(): Texture<TextureSource>
     {
         return this._texture;
     }

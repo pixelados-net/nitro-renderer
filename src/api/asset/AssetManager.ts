@@ -1,7 +1,6 @@
-import { BaseTexture, Resource, Texture } from '@pixi/core';
-import { Spritesheet } from '@pixi/spritesheet';
+import { ImageSource, Spritesheet, Texture, TextureSource } from 'pixi.js';
 import { NitroLogger } from '../common';
-import { ArrayBufferToBase64, NitroBundle } from '../utils';
+import { NitroBundle } from '../utils';
 import { GraphicAssetCollection } from './GraphicAssetCollection';
 import { IAssetData } from './IAssetData';
 import { IAssetManager } from './IAssetManager';
@@ -15,12 +14,12 @@ export class AssetManager implements IAssetManager
     private static DOWNLOAD_CONCURRENCY: number = 8;
     private static DEFAULT_PROTECTED_COLLECTIONS: string[] = ['place_holder', 'place_holder_wall', 'place_holder_pet', 'room', 'tile_cursor', 'selection_arrow'];
 
-    private _textures: Map<string, Texture<Resource>> = new Map();
+    private _textures: Map<string, Texture<TextureSource>> = new Map();
     private _collections: Map<string, IGraphicAssetCollection> = new Map();
     private _collectionLimit: number = 0;
     private _protectedCollections: Set<string> = new Set(AssetManager.DEFAULT_PROTECTED_COLLECTIONS);
 
-    public getTexture(name: string): Texture<Resource>
+    public getTexture(name: string): Texture<TextureSource>
     {
         if(!name) return null;
 
@@ -31,7 +30,7 @@ export class AssetManager implements IAssetManager
         return existing;
     }
 
-    public setTexture(name: string, texture: Texture<Resource>): void
+    public setTexture(name: string, texture: Texture<TextureSource>): void
     {
         if(!name || !texture) return;
 
@@ -194,7 +193,7 @@ export class AssetManager implements IAssetManager
                 const nitroBundle = new NitroBundle(buffer);
 
                 await this.processAsset(
-                    nitroBundle.baseTexture,
+                    await nitroBundle.decodeTexture(),
                     nitroBundle.jsonFile as IAssetData
                 );
                 break;
@@ -202,40 +201,16 @@ export class AssetManager implements IAssetManager
             case 'image/png':
             case 'image/jpeg':
             case 'image/gif': {
-                const buffer = await response.arrayBuffer();
-                const base64 = ArrayBufferToBase64(buffer);
-                const baseTexture = BaseTexture.from(
-                    `data:${ contentType };base64,${ base64 }`
-                );
+                const bitmap = await createImageBitmap(await response.blob());
+                const textureSource = new ImageSource({ resource: bitmap });
 
-                const createAsset = async () =>
-                {
-                    const texture = new Texture(baseTexture);
-                    this.setTexture(url, texture);
-                };
-
-                if(baseTexture.valid)
-                {
-                    await createAsset();
-                }
-                else
-                {
-                    await new Promise<void>((resolve, reject) =>
-                    {
-                        baseTexture.once('update', async () =>
-                        {
-                            await createAsset();
-
-                            return resolve();
-                        });
-                    });
-                }
+                this.setTexture(url, new Texture({ source: textureSource }));
                 break;
             }
         }
     }
 
-    private async processAsset(baseTexture: BaseTexture, data: IAssetData): Promise<void>
+    private async processAsset(baseTexture: TextureSource, data: IAssetData): Promise<void>
     {
         const spritesheetData = data.spritesheet;
 
@@ -246,31 +221,11 @@ export class AssetManager implements IAssetManager
             return;
         }
 
-        const createAsset = async () =>
-        {
-            const spritesheet = new Spritesheet(baseTexture, spritesheetData);
+        const spritesheet = new Spritesheet(new Texture({ source: baseTexture }), spritesheetData);
 
-            await spritesheet.parse();
+        await spritesheet.parse();
 
-            this.createCollection(data, spritesheet);
-        };
-
-        if(baseTexture.valid)
-        {
-            await createAsset();
-        }
-        else
-        {
-            await new Promise<void>((resolve, reject) =>
-            {
-                baseTexture.once('update', async () =>
-                {
-                    await createAsset();
-
-                    return resolve();
-                });
-            });
-        }
+        this.createCollection(data, spritesheet);
     }
 
     public get collections(): Map<string, IGraphicAssetCollection>

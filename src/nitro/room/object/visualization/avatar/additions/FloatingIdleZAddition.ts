@@ -1,4 +1,4 @@
-import { Resource, Texture } from '@pixi/core';
+import { TextureSource, Texture } from 'pixi.js';
 import { AvatarAction, IRoomObjectSprite } from '../../../../../../api';
 import { GetTickerTime } from '../../../../../../pixi-proxy';
 import { AvatarVisualization } from '../AvatarVisualization';
@@ -14,7 +14,7 @@ export class FloatingIdleZAddition implements IAvatarAddition
 
     private _id: number;
     private _visualization: AvatarVisualization;
-    private _asset: Texture<Resource>;
+    private _asset: Texture<TextureSource>;
     private _startTime: number;
     private _offsetY: number;
     private _scale: number;
