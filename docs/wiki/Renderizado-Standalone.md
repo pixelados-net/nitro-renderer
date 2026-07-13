@@ -32,8 +32,8 @@ const image = await imaging.avatar.render({
     direction: 2,        // 0-7
     posture: 'std',      // 'std' | 'sit' | 'lay' | 'wlk' ...
     gesture: 'sml',      // 'sml' | 'sad' | 'agr' | 'srp'
-    expression: 'wav',   // 'wav', 'blw', 'laugh'... (AvatarAction)
-    dance: 1,            // opcional
+    expression: 'wave',  // 'wave', 'blow', 'laugh', 'cry', 'idle', 'respect'
+    dance: 1,            // opcional (su librería dance.N se descarga automáticamente)
     effect: 6,           // opcional (se descarga automáticamente)
     frame: 0,            // frame de la animación
     headOnly: false
@@ -90,7 +90,7 @@ Las direcciones de items/avatares son 0-7 (se convierten a grados internamente).
 
 ```ts
 // Frames con tamaño estable (sin jitter)
-const frames = await imaging.avatar.renderAnimation({ figure, expression: 'wav' }, 8);
+const frames = await imaging.avatar.renderAnimation({ figure, expression: 'wave' }, 8);
 
 // Spritesheet horizontal
 import { buildSpriteSheet, encodeGif } from '@nitrots/nitro-renderer/standalone';
@@ -117,3 +117,4 @@ Si `Nitro.bootstrap()` ya se ejecutó en la misma página, `createNitroImaging` 
 
 - Solo navegador (usa canvas/WebGL del DOM). El render en Node/servidor está planificado (ver plan de mejoras, M9).
 - Los ítems de pared usan una posición por defecto salvo que se pase `location` explícita.
+- Los efectos que añaden sprites externos al cuerpo (naves, monturas, etc.) solo renderizan la animación del cuerpo; los sprites extra del efecto los compone la visualización de sala, no `getImage`.

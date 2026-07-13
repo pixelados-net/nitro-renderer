@@ -19,6 +19,13 @@ export interface IAvatarRenderOptions
     timeoutMs?: number;
 }
 
+// appendAction expects the action names ('wave', 'blow'...), not the short
+// asset codes ('wav', 'blw'); accept both for convenience
+const EXPRESSION_ALIASES: { [index: string]: string } = {
+    'wav': AvatarAction.EXPRESSION_WAVE,
+    'blw': AvatarAction.EXPRESSION_BLOW_A_KISS
+};
+
 export class AvatarImaging
 {
     private _manager: AvatarRenderManager;
@@ -94,9 +101,15 @@ export class AvatarImaging
 
         if(options.effect) await this.ensureEffectReady(options.effect, timeoutMs);
 
+        // dance animations live in downloadable effect libraries (dance.1-4)
+        // and AvatarImage only auto-downloads EFFECT actions, so fetch them here
+        if(options.dance) await this.ensureEffectReady(options.dance, timeoutMs);
+
         const avatarImage = this._manager.createAvatarImage(options.figure, (options.scale || AvatarScaleType.LARGE), (options.gender || 'M'), null, null);
 
         if(!avatarImage) throw new Error('nitro_imaging_avatar_unavailable');
+
+        avatarImage.initActionAppends();
 
         avatarImage.appendAction(AvatarAction.POSTURE, (options.posture || AvatarAction.POSTURE_STAND));
 
@@ -106,7 +119,7 @@ export class AvatarImaging
 
         if(options.effect) avatarImage.appendAction(AvatarAction.EFFECT, options.effect);
 
-        if(options.expression) avatarImage.appendAction(options.expression);
+        if(options.expression) avatarImage.appendAction(EXPRESSION_ALIASES[options.expression] || options.expression);
 
         avatarImage.setDirection(AvatarSetType.FULL, ((options.direction === undefined) ? 2 : options.direction));
 
