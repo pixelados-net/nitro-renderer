@@ -335,7 +335,7 @@ export class AvatarStructure extends EventDispatcher
         let _local_20: AvatarAnimationFrame[] = [];
         let _local_36: IPartColor = null;
 
-        if(!_arg_3 == null) return [];
+        if(!_arg_3) return [];
 
         const _local_9 = this._partSetsData.getActiveParts(_arg_3.definition);
         const _local_11: AvatarImagePartContainer[] = [];

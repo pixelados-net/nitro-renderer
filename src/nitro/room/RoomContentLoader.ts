@@ -77,7 +77,7 @@ export class RoomContentLoader implements IFurnitureDataListener, IRoomContentLo
 
         this.setFurnitureData();
 
-        for(const [index, name] of NitroConfiguration.getValue<string[]>('pet.types').entries()) this._pets[name] = index;
+        for(const [index, name] of NitroConfiguration.getValue<string[]>('pet.types', []).entries()) this._pets[name] = index;
     }
 
     public dispose(): void

@@ -3,9 +3,8 @@ import { Container, DisplayObject } from '@pixi/display';
 import { Graphics } from '@pixi/graphics';
 import { Matrix, Point, Rectangle } from '@pixi/math';
 import { Sprite } from '@pixi/sprite';
-import { IRoomCanvasMouseListener, IRoomGeometry, IRoomObject, IRoomObjectSprite, IRoomObjectSpriteVisualization, IRoomRenderingCanvas, IRoomSpriteCanvasContainer, IRoomSpriteMouseEvent, MouseEventType, RoomObjectSpriteData, RoomObjectSpriteType, Vector3d } from '../../api';
+import { IRoomCanvasMouseListener, IRoomGeometry, IRoomObject, IRoomObjectSprite, IRoomObjectSpriteVisualization, IRoomRenderingCanvas, IRoomSpriteCanvasContainer, IRoomSpriteMouseEvent, MouseEventType, NitroConfiguration, RoomObjectSpriteData, RoomObjectSpriteType, Vector3d } from '../../api';
 import { RoomSpriteMouseEvent } from '../../events';
-import { Nitro } from '../../nitro/Nitro';
 import { GetTicker, NitroContainer, NitroSprite, PixiApplicationProxy } from '../../pixi-proxy';
 import { RoomEnterEffect, RoomGeometry, RoomRotatingEffect, RoomShakingEffect } from '../utils';
 import { RoomObjectCache, RoomObjectCacheItem } from './cache';
@@ -73,7 +72,7 @@ export class RoomSpriteCanvas implements IRoomRenderingCanvas
         this._container = container;
 
         this._geometry = new RoomGeometry(scale, new Vector3d(-135, 30, 0), new Vector3d(11, 11, 5), new Vector3d(-135, 0.5, 0));
-        this._animationFPS = Nitro.instance.getConfiguration<number>('system.fps.animation', 24);
+        this._animationFPS = NitroConfiguration.getValue<number>('system.fps.animation', 24);
         this._renderTimestamp = 0;
         this._totalTimeRunning = 0;
         this._lastFrame = 0;

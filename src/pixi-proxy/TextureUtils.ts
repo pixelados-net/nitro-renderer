@@ -1,18 +1,24 @@
-import { AbstractRenderer, Renderer, RenderTexture, Resource, Texture } from '@pixi/core';
+import { BaseTexture, IRenderer, Renderer, RenderTexture, Resource, Texture } from '@pixi/core';
 import { DisplayObject } from '@pixi/display';
 import { Extract } from '@pixi/extract';
 import { Matrix, Rectangle } from '@pixi/math';
-import { settings } from '@pixi/settings';
 import { Sprite } from '@pixi/sprite';
 import { PixiApplicationProxy } from './PixiApplicationProxy';
 
 export class TextureUtils
 {
+    private static _renderer: Renderer | IRenderer = null;
+
+    public static setRenderer(renderer: Renderer | IRenderer): void
+    {
+        this._renderer = renderer;
+    }
+
     public static generateTexture(displayObject: DisplayObject, region: Rectangle = null, scaleMode: number = null, resolution: number = 1): RenderTexture
     {
         if(!displayObject) return null;
 
-        if(scaleMode === null) scaleMode = settings.SCALE_MODE;
+        if(scaleMode === null) scaleMode = BaseTexture.defaultOptions.scaleMode;
 
         return this.getRenderer().generateTexture(displayObject, {
             scaleMode,
@@ -28,25 +34,39 @@ export class TextureUtils
         return Texture.from(image);
     }
 
+    // Pixi 7 made Extract.image() async; building the image from the
+    // still-synchronous canvas extraction keeps this API synchronous
     public static generateImage(target: DisplayObject | RenderTexture): HTMLImageElement
     {
         if(!target) return null;
 
-        return this.getExtractor().image(target);
+        const url = this.generateImageUrl(target);
+
+        if(!url) return null;
+
+        const image = new Image();
+
+        image.src = url;
+
+        return image;
     }
 
     public static generateImageUrl(target: DisplayObject | RenderTexture): string
     {
         if(!target) return null;
 
-        return this.getExtractor().base64(target);
+        const canvas = this.generateCanvas(target);
+
+        if(!canvas) return null;
+
+        return canvas.toDataURL('image/png');
     }
 
     public static generateCanvas(target: DisplayObject | RenderTexture): HTMLCanvasElement
     {
         if(!target) return null;
 
-        return this.getExtractor().canvas(target);
+        return (this.getExtractor().canvas(target) as HTMLCanvasElement);
     }
 
     public static clearRenderTexture(renderTexture: RenderTexture): RenderTexture
@@ -113,16 +133,18 @@ export class TextureUtils
 
     public static getPixels(displayObject: DisplayObject | RenderTexture, frame: Rectangle = null): Uint8Array
     {
-        return this.getExtractor().pixels(displayObject);
+        return this.getExtractor().pixels(displayObject, frame);
     }
 
-    public static getRenderer(): Renderer | AbstractRenderer
+    public static getRenderer(): Renderer | IRenderer
     {
+        if(this._renderer) return this._renderer;
+
         return PixiApplicationProxy.instance.renderer;
     }
 
     public static getExtractor(): Extract
     {
-        return (this.getRenderer().plugins.extract as Extract);
+        return ((this.getRenderer() as Renderer).extract as Extract);
     }
 }

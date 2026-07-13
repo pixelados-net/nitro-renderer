@@ -89,7 +89,7 @@ export class BinaryWriter implements IBinaryWriter
 
     public getBuffer(): ArrayBuffer
     {
-        return this._buffer.buffer;
+        return (this._buffer.buffer as ArrayBuffer);
     }
 
     public get position(): number

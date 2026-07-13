@@ -22,4 +22,5 @@ export interface IGraphicAssetCollection
     name: string;
     baseTexture: BaseTexture;
     data: IAssetData;
+    textures: Map<string, Texture<Resource>>;
 }

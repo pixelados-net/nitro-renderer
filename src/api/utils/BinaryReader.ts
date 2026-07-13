@@ -13,7 +13,7 @@ export class BinaryReader implements IBinaryReader
 
     public readBytes(length: number): IBinaryReader
     {
-        const buffer = new BinaryReader(this._dataView.buffer.slice(this._position, this._position + length));
+        const buffer = new BinaryReader((this._dataView.buffer as ArrayBuffer).slice(this._position, this._position + length));
 
         this._position += length;
 
@@ -77,6 +77,6 @@ export class BinaryReader implements IBinaryReader
 
     public toArrayBuffer(): ArrayBuffer
     {
-        return this._dataView.buffer;
+        return (this._dataView.buffer as ArrayBuffer);
     }
 }

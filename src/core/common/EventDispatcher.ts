@@ -4,12 +4,14 @@ import { Disposable } from './Disposable';
 export class EventDispatcher extends Disposable implements IEventDispatcher, IDisposable
 {
     private _listeners: Map<string, Function[]>;
+    private _dispatching: number;
 
     constructor()
     {
         super();
 
         this._listeners = new Map();
+        this._dispatching = 0;
     }
 
     protected onDispose(): void
@@ -32,6 +34,15 @@ export class EventDispatcher extends Disposable implements IEventDispatcher, IDi
             return;
         }
 
+        // copy-on-write while dispatching: in-flight iterations keep
+        // reading the previous array as a stable snapshot
+        if(this._dispatching > 0)
+        {
+            this._listeners.set(type, [...existing, callback]);
+
+            return;
+        }
+
         existing.push(callback);
     }
 
@@ -46,6 +57,18 @@ export class EventDispatcher extends Disposable implements IEventDispatcher, IDi
         for(const [i, cb] of existing.entries())
         {
             if(!cb || (cb !== callback)) continue;
+
+            if(this._dispatching > 0)
+            {
+                const copy = existing.slice();
+
+                copy.splice(i, 1);
+
+                if(!copy.length) this._listeners.delete(type);
+                else this._listeners.set(type, copy);
+
+                return;
+            }
 
             existing.splice(i, 1);
 
@@ -72,30 +95,36 @@ export class EventDispatcher extends Disposable implements IEventDispatcher, IDi
 
         if(!existing || !existing.length) return;
 
-        const callbacks = [];
+        // iterate the live array without per-dispatch copies; while
+        // _dispatching > 0 any add/remove swaps in a new array, so this
+        // reference behaves as a snapshot even if listeners mutate
+        this._dispatching++;
 
-        for(const callback of existing)
+        try
         {
-            if(!callback) continue;
+            for(let i = 0; i < existing.length; i++)
+            {
+                const callback = existing[i];
 
-            callbacks.push(callback);
+                if(!callback) continue;
+
+                try
+                {
+                    callback(event);
+                }
+
+                catch (err)
+                {
+                    NitroLogger.error(err.stack);
+
+                    return;
+                }
+            }
         }
 
-        while(callbacks.length)
+        finally
         {
-            const callback = callbacks.shift();
-
-            try
-            {
-                callback(event);
-            }
-
-            catch (err)
-            {
-                NitroLogger.error(err.stack);
-
-                return;
-            }
+            this._dispatching--;
         }
     }
 

@@ -39,7 +39,7 @@ export class NitroBundle
             else
             {
                 const decompressed = inflate((buffer.toArrayBuffer() as Data));
-                const base64 = ArrayBufferToBase64(decompressed);
+                const base64 = ArrayBufferToBase64((decompressed as unknown as ArrayBuffer));
 
                 this._baseTexture = new BaseTexture('data:image/png;base64,' + base64);
             }
