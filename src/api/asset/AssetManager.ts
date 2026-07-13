@@ -13,9 +13,12 @@ export class AssetManager implements IAssetManager
     public static _INSTANCE: IAssetManager = new AssetManager();
 
     private static DOWNLOAD_CONCURRENCY: number = 8;
+    private static DEFAULT_PROTECTED_COLLECTIONS: string[] = ['place_holder', 'place_holder_wall', 'place_holder_pet', 'room', 'tile_cursor', 'selection_arrow'];
 
     private _textures: Map<string, Texture<Resource>> = new Map();
     private _collections: Map<string, IGraphicAssetCollection> = new Map();
+    private _collectionLimit: number = 0;
+    private _protectedCollections: Set<string> = new Set(AssetManager.DEFAULT_PROTECTED_COLLECTIONS);
 
     public getTexture(name: string): Texture<Resource>
     {
@@ -61,6 +64,12 @@ export class AssetManager implements IAssetManager
 
         if(!existing) return null;
 
+        if(this._collectionLimit > 0)
+        {
+            this._collections.delete(name);
+            this._collections.set(name, existing);
+        }
+
         return existing;
     }
 
@@ -75,9 +84,55 @@ export class AssetManager implements IAssetManager
             for(const [name, texture] of collection.textures.entries()) this.setTexture(name, texture);
 
             this._collections.set(collection.name, collection);
+
+            this.evictCollections();
         }
 
         return collection;
+    }
+
+    /**
+     * Enables LRU eviction of asset collections. Disabled by default
+     * (limit 0 = unlimited, the historical behavior). Mandatory room
+     * libraries are never evicted; additional names can be protected.
+     */
+    public setCollectionEvictionLimit(limit: number, protectedNames: string[] = null): void
+    {
+        this._collectionLimit = ((limit > 0) ? limit : 0);
+
+        if(protectedNames)
+        {
+            for(const name of protectedNames)
+            {
+                if(name) this._protectedCollections.add(name);
+            }
+        }
+
+        this.evictCollections();
+    }
+
+    private evictCollections(): void
+    {
+        if(this._collectionLimit <= 0) return;
+
+        let evictable = (this._collections.size - this._collectionLimit);
+
+        if(evictable <= 0) return;
+
+        for(const [name, collection] of this._collections)
+        {
+            if(evictable <= 0) return;
+
+            if(!collection || this._protectedCollections.has(name)) continue;
+
+            this._collections.delete(name);
+
+            for(const textureName of collection.textures.keys()) this._textures.delete(textureName);
+
+            collection.dispose();
+
+            evictable--;
+        }
     }
 
     public async downloadAsset(url: string): Promise<boolean>
