@@ -6,6 +6,7 @@ import { IAssetData } from '../src/api/asset/IAssetData';
 import { NitroBundle } from '../src/api/utils/NitroBundle';
 import { AdjustmentFilter } from '../src/pixi-proxy/adjustment-filter';
 import { CopyChannelFilter } from '../src/pixi-proxy/CopyChannelFilter';
+import { NitroAlphaFilter } from '../src/pixi-proxy/NitroAlphaFilter';
 import { PaletteMapFilter } from '../src/pixi-proxy/PaletteMapFilter';
 
 const createBundle = (files: Array<{ name: string, data: Uint8Array }>): ArrayBuffer =>
@@ -110,14 +111,17 @@ describe('Pixi 8 texture pipeline', () =>
     {
         const mask = RenderTexture.create({ width: 1, height: 1 });
         const adjustment = new AdjustmentFilter({ brightness: 0.75 });
+        const alpha = new NitroAlphaFilter(0.2);
         const palette = new PaletteMapFilter([0xFFFFFFFF]);
         const copy = new CopyChannelFilter(mask, CopyChannelFilter.CHANNEL_RED, CopyChannelFilter.CHANNEL_ALPHA);
 
         expect(adjustment.brightness).toBe(0.75);
+        expect(alpha.alpha).toBe(0.2);
         expect(palette.lut.width).toBe(1);
         expect(copy.resources.mask).toBe(mask.source);
 
         adjustment.destroy();
+        alpha.destroy();
         palette.destroy();
         copy.destroy();
         mask.destroy(true);

@@ -13,6 +13,15 @@
 - Updated scene containers so sprites are no longer used as generic child hosts.
 - Added PixiJS 8 texture-pipeline coverage for Nitro bundles and spritesheets.
 
+### Fixed
+
+- Restored the legacy `view` canvas alias while consumers migrate to PixiJS 8's
+  `canvas` property, preventing non-Node values from reaching `appendChild`.
+- Preserved numeric `NitroAlphaFilter` construction and subclass initialization
+  through the asynchronous `PixiApplicationProxy.ready` contract.
+- Camera overlays now decode fetched images directly instead of probing Pixi's
+  asset cache for URL-backed textures.
+
 ### Breaking
 
 - `Nitro.bootstrap()` is asynchronous and must now be awaited before consumers

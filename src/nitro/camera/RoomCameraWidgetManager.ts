@@ -1,4 +1,4 @@
-import { Assets, Texture } from 'pixi.js';
+import { ImageSource, Texture } from 'pixi.js';
 import { ColorMatrix, ColorMatrixFilter } from 'pixi.js';
 import { IEventDispatcher, IRoomCameraWidgetEffect, IRoomCameraWidgetManager, IRoomCameraWidgetSelectedEffect, NitroConfiguration } from '../../api';
 import { EventDispatcher } from '../../core';
@@ -49,7 +49,7 @@ export class RoomCameraWidgetManager implements IRoomCameraWidgetManager
             {
                 try
                 {
-                    cameraEffect.texture = await Assets.load<Texture>(imagesUrl + effect.name + '.png');
+                    cameraEffect.texture = await this.loadTexture(imagesUrl + effect.name + '.png');
                 }
                 catch
                 {
@@ -63,6 +63,17 @@ export class RoomCameraWidgetManager implements IRoomCameraWidgetManager
         }
 
         this.events.dispatchEvent(new RoomCameraWidgetManagerEvent(RoomCameraWidgetManagerEvent.INITIALIZED));
+    }
+
+    private async loadTexture(url: string): Promise<Texture>
+    {
+        const response = await fetch(url);
+
+        if(!response.ok) throw new Error(`Failed to load camera effect: ${ url }`);
+
+        const bitmap = await createImageBitmap(await response.blob());
+
+        return new Texture({ source: new ImageSource({ resource: bitmap }) });
     }
 
     public applyEffects(texture: Texture, selectedEffects: IRoomCameraWidgetSelectedEffect[], isZoomed: boolean): HTMLImageElement
