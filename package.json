@@ -22,12 +22,17 @@
   ],
   "exports": {
     ".": "./index.ts",
-    "./standalone": "./src/standalone/index.ts",
+    "./standalone": {
+      "types": "./dist/standalone/index.d.ts",
+      "import": "./dist/standalone.js",
+      "default": "./dist/standalone.js"
+    },
     "./*": "./*"
   },
   "scripts": {
     "build": "vite build",
     "compile": "tsc --project ./tsconfig.json --noEmit false",
+    "prepare": "npm run build",
     "typecheck": "tsc --project ./tsconfig.json",
     "lint": "eslint ./src",
     "eslint": "eslint ./src --fix",

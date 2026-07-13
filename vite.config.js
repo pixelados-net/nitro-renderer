@@ -18,9 +18,13 @@ export default defineConfig({
     build: {
         sourcemap: true,
         lib: {
-            entry: resolve(__dirname, 'src/index.ts'),
+            entry: {
+                'nitro-renderer': resolve(__dirname, 'src/index.ts'),
+                standalone: resolve(__dirname, 'src/standalone/index.ts')
+            },
+            formats: ['es'],
             name: 'nitro-renderer',
-            fileName: 'nitro-renderer'
+            fileName: (_, entryName) => `${entryName}.js`
         }
     },
     resolve: {
