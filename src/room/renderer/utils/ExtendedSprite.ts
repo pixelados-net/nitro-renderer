@@ -16,9 +16,11 @@ export class ExtendedSprite extends Sprite
     private _pairedSpriteId: number;
     private _pairedSpriteUpdateCounter: number;
 
-    constructor(texture: Texture<TextureSource> = null)
+    constructor(texture: Texture<TextureSource> = Texture.EMPTY)
     {
-        super(texture);
+        // Pixi 8 treats an explicit null as a Sprite options object and then
+        // attempts to read null.texture. Always construct with a real texture.
+        super(texture || Texture.EMPTY);
 
         // Room sprites may carry an auxiliary visualization container. Pixi 8
         // defaults view objects to leaf nodes, so opt this compatibility

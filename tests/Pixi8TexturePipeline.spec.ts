@@ -8,6 +8,7 @@ import { AdjustmentFilter } from '../src/pixi-proxy/adjustment-filter';
 import { CopyChannelFilter } from '../src/pixi-proxy/CopyChannelFilter';
 import { NitroAlphaFilter } from '../src/pixi-proxy/NitroAlphaFilter';
 import { PaletteMapFilter } from '../src/pixi-proxy/PaletteMapFilter';
+import { ExtendedSprite } from '../src/room/renderer/utils/ExtendedSprite';
 
 const createBundle = (files: Array<{ name: string, data: Uint8Array }>): ArrayBuffer =>
 {
@@ -105,6 +106,15 @@ describe('Pixi 8 texture pipeline', () =>
         expect(collection.textureSource).toBe(source);
         expect(collection.getAsset('icon')?.texture).toBe(spritesheet.textures['test_icon.png']);
         expect(manager.getTexture('test_icon')).toBe(spritesheet.textures['test_icon.png']);
+    });
+
+    it('constructs pooled room sprites without passing null to Pixi', () =>
+    {
+        const sprite = new ExtendedSprite();
+
+        expect(sprite.texture).toBe(Texture.EMPTY);
+
+        sprite.destroy();
     });
 
     it('constructs every camera and palette filter with Pixi 8 shader resources', () =>

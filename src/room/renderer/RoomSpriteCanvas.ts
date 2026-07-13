@@ -125,11 +125,15 @@ export class RoomSpriteCanvas implements IRoomRenderingCanvas
             this._master = new NitroContainer();
 
             this._master.interactiveChildren = false;
+            this._master.cullableChildren = false;
         }
 
         if(!this._display)
         {
             const display = new NitroContainer();
+
+            display.isRenderGroup = false;
+            display.cullableChildren = false;
 
             this._master.addChild(display);
 
@@ -551,7 +555,7 @@ export class RoomSpriteCanvas implements IRoomRenderingCanvas
     {
         if(!sprite) return '';
 
-        return sprite.name;
+        return sprite.label;
     }
 
     private renderSprite(index: number, sprite: SortableSprite): boolean

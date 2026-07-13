@@ -1,5 +1,16 @@
 # Changelog
 
+## 3.0.1 - 2026-07-13
+
+### Fixed
+
+- Prevented pooled room sprites from passing `null` into PixiJS 8's `Sprite`
+  constructor, which stopped the room render loop before any object was drawn.
+- Migrated the remaining legacy `TilingSprite(texture, width, height)` call to
+  the PixiJS 8 options-object constructor.
+- Disabled automatic child culling on the room scene containers and completed
+  the `name` to `label` migration used by sprite hit detection.
+
 ## 3.0.0 - 2026-07-13
 
 ### Changed

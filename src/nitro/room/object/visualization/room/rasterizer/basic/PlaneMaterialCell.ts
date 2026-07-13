@@ -98,7 +98,11 @@ export class PlaneMaterialCell
         if(!texture) return null;
 
         const bitmap = new Container();
-        const background = new TilingSprite(texture, texture.width, texture.height);
+        const background = new TilingSprite({
+            texture,
+            width: texture.width,
+            height: texture.height
+        });
 
         bitmap.addChild(background);
 
