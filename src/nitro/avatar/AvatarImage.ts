@@ -911,7 +911,7 @@ export class AvatarImage implements IAvatarImage, IAvatarEffectListener
 
     private setActionsToParts(): void
     {
-        if(!this._sortedActions == null) return;
+        if(this._sortedActions == null) return;
 
         const _local_3: number = GetTickerTime();
         const _local_4: string[] = [];
