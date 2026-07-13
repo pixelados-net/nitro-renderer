@@ -1,4 +1,4 @@
-import { InteractionEvent } from '@pixi/interaction';
+import { FederatedPointerEvent } from '@pixi/events';
 
-export class PixiInteractionEventProxy extends InteractionEvent
+export class PixiInteractionEventProxy extends FederatedPointerEvent
 {}

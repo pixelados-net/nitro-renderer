@@ -1,4 +1,4 @@
-import { AbstractRenderer, Renderer, RenderTexture, Texture } from '@pixi/core';
+import { IRenderer, Renderer, RenderTexture, Texture } from '@pixi/core';
 import { DisplayObject } from '@pixi/display';
 import { Extract } from '@pixi/extract';
 import { Matrix, Rectangle } from '@pixi/math';
@@ -114,16 +114,16 @@ export class PlaneTextureCache
 
     public getPixels(displayObject: DisplayObject | RenderTexture, frame: Rectangle = null): Uint8Array
     {
-        return this.getExtractor().pixels(displayObject);
+        return this.getExtractor().pixels(displayObject, frame);
     }
 
-    public getRenderer(): Renderer | AbstractRenderer
+    public getRenderer(): Renderer | IRenderer
     {
         return PixiApplicationProxy.instance.renderer;
     }
 
     public getExtractor(): Extract
     {
-        return (this.getRenderer().plugins.extract as Extract);
+        return ((this.getRenderer() as Renderer).extract as Extract);
     }
 }

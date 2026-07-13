@@ -17,7 +17,7 @@ export interface INitroImagingOptions
 {
     configurationUrl?: string;
     configuration?: { [index: string]: any };
-    applicationOptions?: IApplicationOptions;
+    applicationOptions?: Partial<IApplicationOptions>;
     timeoutMs?: number;
 }
 
