@@ -75,6 +75,9 @@ const roomImage = await imaging.room.render({
     // Habbo-style floor plan ('x' = blocked, 0-9 = tile height). Optional:
     // without a plan, a square room of `size` tiles is generated.
     floorPlan: 'xxxxxx\nx0000\nx0000\nx0000\nx0000',
+    // Arcturus-compatible room decoration material identifiers:
+    floorType: '501',
+    wallType: '301',
     items: [
         { classname: 'throne', x: 2, y: 2, direction: 4, state: 0 },
         { classname: 'club_sofa', x: 3, y: 1, direction: 2 }

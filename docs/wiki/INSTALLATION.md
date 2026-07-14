@@ -68,3 +68,7 @@ yarn link @nitrots/nitro-renderer
 ## Continuous integration
 
 Every push and pull request runs typecheck, lint, tests and build (`.github/workflows/ci.yml`). Publishing to npm happens automatically when a GitHub release is published (`.github/workflows/publish.yml`, requires the `NPM_TOKEN` secret).
+
+## Where to go next
+
+Once the library builds, [[ARCHITECTURE]] is the map of the whole engine — start there.

@@ -1,5 +1,7 @@
 # Architecture
 
+This page is the map. It gives a directory-level and manager-level overview of the whole engine; every subsystem it mentions has its own deep-dive page — follow the links inline, or read the whole wiki in order starting from [[Home]]'s reading list.
+
 ## Source layout
 
 ```
@@ -21,18 +23,22 @@ src/
 4. `Nitro.init()` initializes the managers in order: avatar → sound → session → `RoomEngine`.
 5. `RoomEngine` fires `RoomEngineEvent.ENGINE_INITIALIZED` once the `RoomContentLoader` is ready.
 
+The full breakdown of the singleton, this lifecycle, and the `Disposable`/`NitroManager` pattern every manager below is built on lives in [[NITRO-CORE]].
+
 ## Managers
 
 | Manager | Responsibility | Needs a connection? |
 |---|---|---|
-| `NitroCommunicationManager` | Websocket, EvaWire codec, incoming/outgoing messages | Yes |
-| `AvatarRenderManager` | Avatar figures: geometry, part sets, animations, clothing downloads | **No** |
-| `RoomEngine` | Room instances, objects, visualizations, furni/pet imaging | Only for live rooms |
+| `NitroCommunicationManager` | Websocket, EvaWire codec, incoming/outgoing messages ([[NETWORKING]], [[PACKET-PROTOCOL]]) | Yes |
+| `AvatarRenderManager` | Avatar figures: geometry, part sets, animations, clothing downloads ([[AVATAR-FIGURES]], [[AVATAR-RENDERING]], [[AVATAR-ANIMATIONS]]) | **No** |
+| `RoomEngine` | Room instances, objects, visualizations, furni/pet imaging ([[ROOM-ENGINE]], [[ROOM-RENDERING]], [[FURNITURE]]) | Only for live rooms |
 | `RoomManager` | Lifecycle of `RoomInstance` and its objects | No |
 | `SessionDataManager` | Session data (user, permissions, badges, furnidata) | Yes |
 | `RoomSessionManager` | Room sessions (enter/leave, users) | Yes |
 | `RoomCameraWidgetManager` | In-room camera/photo | No |
 | `SoundManager` | Music and effects (howler) | Partially |
+
+Everything that animates — avatars, furniture, room re-rendering — is paced by one shared game loop; see [[TIMING-AND-ANIMATION]] for exactly how render rate and animation rate are decoupled.
 
 ## Asset pipeline
 
