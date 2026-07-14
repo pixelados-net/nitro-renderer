@@ -40,8 +40,10 @@ export interface IRoomAvatarDefinition
 export interface IRoomRenderOptions
 {
     floorPlan?: string;
+    floorType?: string;
     size?: number;
     wallHeight?: number;
+    wallType?: string;
     items?: IRoomItemDefinition[];
     avatars?: IRoomAvatarDefinition[];
     width?: number;
@@ -147,6 +149,15 @@ export class RoomImaging
             this._roomEngine.createRoomInstance(roomId, planeParser.getMapData());
 
             this.initializeWallGeometry(roomId, planeParser, (size + 2), (size + 2));
+        }
+
+        if(options.floorType || options.wallType)
+        {
+            this._roomEngine.updateRoomInstancePlaneType(
+                roomId,
+                (options.floorType || null),
+                (options.wallType || null)
+            );
         }
 
         planeParser.dispose();

@@ -1,6 +1,6 @@
 # Examples
 
-A cookbook of end-to-end recipes, roughly in order of increasing scope — from a single figure string to a full connected client. Each example links back to the deep-dive page that explains *why* it works.
+A cookbook of end-to-end recipes, roughly in order of increasing scope: from a single figure string to a full connected client. Each example links back to the deep-dive page that explains *why* it works.
 
 ## 1. Parse and edit a figure string
 
@@ -51,7 +51,7 @@ const imaging = await createNitroImaging({ configurationUrl: '...' });
 const frames = await imaging.avatar.renderAnimation({
     figure: 'hd-180-1.ch-210-66.lg-270-82.sh-290-80',
     posture: 'std',
-    expression: 'wave' // full word, not the short 'wav' code — see AVATAR-ANIMATIONS
+    expression: 'wave' // full word, not the short 'wav' code: see AVATAR-ANIMATIONS
 }, 8);
 
 const sheet = await buildSpriteSheet(frames); // sheet.canvas, sheet.dataUrl
@@ -103,30 +103,30 @@ Nitro.instance.communication.registerMessageEvent(
 );
 ```
 
-Adding support for a packet type this library doesn't already model is a five-step process (header constant → parser → event → registration → listener) — see the "Adding a new incoming packet handler" section of [[PACKET-PROTOCOL]] for the full walkthrough.
+Adding support for a packet type this library doesn't already model is a five-step process (header constant → parser → event → registration → listener): see the "Adding a new incoming packet handler" section of [[PACKET-PROTOCOL]] for the full walkthrough.
 
 ## 6. Bootstrap a full connected client
 
-This is the capstone — it ties together [[NITRO-CORE]] (the singleton and its managers), [[NETWORKING]] (the connection), and everything above (once connected, a `RoomEngine` is live and behaves exactly like the standalone examples' room/avatar rendering, just driven by the server instead of by you).
+This is the capstone: it ties together [[NITRO-CORE]] (the singleton and its managers), [[NETWORKING]] (the connection), and everything above (once connected, a `RoomEngine` is live and behaves exactly like the standalone examples' room/avatar rendering, just driven by the server instead of by you).
 
 ```ts
 import { Nitro, ConfigurationEvent, NitroConfiguration, RoomEngineEvent } from '@nitrots/nitro-renderer';
 
-// 1. Load configuration (config.urls) before anything else can init — see NITRO-CORE
+// 1. Load configuration (config.urls) before anything else can init: see NITRO-CORE
 await Nitro.bootstrap();
 
-// 2. Kick off the connection — see NETWORKING
+// 2. Kick off the connection: see NETWORKING
 Nitro.instance.communication.init(); // opens the websocket to `socket.url`
 
 // 3. Once configuration is loaded and the connection exists, init the rest of the graph
 Nitro.instance.core.configuration.events.addEventListener(ConfigurationEvent.LOADED, () => {
-    Nitro.instance.init(); // throws if no connection yet — see NITRO-CORE
+    Nitro.instance.init(); // throws if no connection yet: see NITRO-CORE
 });
 
 // 4. React once the room engine is ready (fires once its content loader finishes)
 Nitro.instance.roomEngine.events.addEventListener(RoomEngineEvent.ENGINE_INITIALIZED, () => {
-    console.log('room engine ready — server-driven avatars/rooms will now render normally');
+    console.log('room engine ready: server-driven avatars/rooms will now render normally');
 });
 ```
 
-From here, every packet the server sends flows through [[PACKET-PROTOCOL]], every avatar the server places renders through [[AVATAR-RENDERING]] and animates through [[AVATAR-ANIMATIONS]] and [[TIMING-AND-ANIMATION]], and every room the server describes renders through [[ROOM-ENGINE]], [[ROOM-RENDERING]] and [[FURNITURE]] — the same pipelines the standalone examples above exercise manually, just wired to the network instead of to your own function calls.
+From here, every packet the server sends flows through [[PACKET-PROTOCOL]], every avatar the server places renders through [[AVATAR-RENDERING]] and animates through [[AVATAR-ANIMATIONS]] and [[TIMING-AND-ANIMATION]], and every room the server describes renders through [[ROOM-ENGINE]], [[ROOM-RENDERING]] and [[FURNITURE]]: the same pipelines the standalone examples above exercise manually, just wired to the network instead of to your own function calls.

@@ -1,19 +1,19 @@
 {
   "name": "@nitrots/nitro-renderer",
   "description": "Javascript library for rendering Nitro in the browser using PixiJS",
-  "version": "3.0.3",
+  "version": "1.0.0",
   "publishConfig": {
     "access": "public"
   },
   "repository": {
     "type": "git",
-    "url": "https://git.krews.org/nitro/nitro-renderer.git"
+    "url": "git+https://github.com/pixelados-net/nitro-renderer.git"
   },
-  "license": "GPL-3.0",
+  "license": "AGPL-3.0-only",
   "bugs": {
-    "url": "https://git.krews.org/nitro/nitro-renderer/issues"
+    "url": "https://github.com/pixelados-net/nitro-renderer/issues"
   },
-  "homepage": "https://git.krews.org/nitro/nitro-renderer",
+  "homepage": "https://github.com/pixelados-net/nitro-renderer#readme",
   "type": "module",
   "files": [
     "index.ts",

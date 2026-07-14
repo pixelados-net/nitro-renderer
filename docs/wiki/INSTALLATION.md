@@ -15,7 +15,7 @@ Two entrypoints are available:
 | Entrypoint | Contents |
 |---|---|
 | `@nitrots/nitro-renderer` | The full engine (client usage: `await Nitro.bootstrap()`, managers, networking) |
-| `@nitrots/nitro-renderer/standalone` | Connection-less imaging facade — see [[STANDALONE-RENDERING]] |
+| `@nitrots/nitro-renderer/standalone` | Connection-less imaging facade: see [[STANDALONE-RENDERING]] |
 
 ## Requirements
 
@@ -71,4 +71,4 @@ Every push and pull request runs typecheck, lint, tests and build (`.github/work
 
 ## Where to go next
 
-Once the library builds, [[ARCHITECTURE]] is the map of the whole engine — start there.
+Once the library builds, [[ARCHITECTURE]] is the map of the whole engine: start there.

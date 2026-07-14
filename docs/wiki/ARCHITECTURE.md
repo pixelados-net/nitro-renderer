@@ -1,10 +1,10 @@
 # Architecture
 
-This page is the map. It gives a directory-level and manager-level overview of the whole engine; every subsystem it mentions has its own deep-dive page — follow the links inline, or read the whole wiki in order starting from [[Home]]'s reading list.
+This page is the map. It gives a directory-level and manager-level overview of the whole engine; every subsystem it mentions has its own deep-dive page: follow the links inline, or read the whole wiki in order starting from [[Home]]'s reading list.
 
 ## Source layout
 
-```
+```text
 src/
 ├── core/         Configuration, networking (websocket + packet codecs), base utilities
 ├── api/          Public interfaces + AssetManager (loads .nitro asset bundles)
@@ -19,7 +19,7 @@ src/
 
 1. `await Nitro.bootstrap()` asynchronously creates the canvas, initializes the Pixi 8 `Application` and publishes the `Nitro.instance` singleton.
 2. Configuration loads (`NitroConfiguration`) and fires `ConfigurationEvent.LOADED`.
-3. The websocket connection is established (`communication`) — **required by `Nitro.init()`**.
+3. The websocket connection is established (`communication`): **required by `Nitro.init()`**.
 4. `Nitro.init()` initializes the managers in order: avatar → sound → session → `RoomEngine`.
 5. `RoomEngine` fires `RoomEngineEvent.ENGINE_INITIALIZED` once the `RoomContentLoader` is ready.
 
@@ -38,7 +38,7 @@ The full breakdown of the singleton, this lifecycle, and the `Disposable`/`Nitro
 | `RoomCameraWidgetManager` | In-room camera/photo | No |
 | `SoundManager` | Music and effects (howler) | Partially |
 
-Everything that animates — avatars, furniture, room re-rendering — is paced by one shared game loop; see [[TIMING-AND-ANIMATION]] for exactly how render rate and animation rate are decoupled.
+Everything that animates (avatars, furniture, room re-rendering) is paced by one shared game loop; see [[TIMING-AND-ANIMATION]] for exactly how render rate and animation rate are decoupled.
 
 ## Asset pipeline
 
@@ -56,9 +56,9 @@ Mandatory room libraries (`room`, `tile_cursor`, `selection_arrow`, placeholders
 
 ## Singletons worth knowing
 
-- `Nitro.instance` — the full client (null when using only the standalone facade).
-- `PixiApplicationProxy.instance` — the Pixi `Application` (renderer + ticker). `TextureUtils` uses it by default to generate textures; it can be overridden with `TextureUtils.setRenderer(...)`.
-- `AssetManager._INSTANCE` via `GetAssetManager()` — the global collection/texture cache.
+- `Nitro.instance`: the full client (null when using only the standalone facade).
+- `PixiApplicationProxy.instance`: the Pixi `Application` (renderer + ticker). `TextureUtils` uses it by default to generate textures; it can be overridden with `TextureUtils.setRenderer(...)`.
+- `AssetManager._INSTANCE` via `GetAssetManager()`: the global collection/texture cache.
 
 ## Event system
 
