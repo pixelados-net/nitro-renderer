@@ -1,6 +1,6 @@
 **Nitro Renderer**
 
-- [[HOME]]
+- [[Home]]
 - [[INSTALLATION]]
 - [[ARCHITECTURE]]
 - [[STANDALONE-RENDERING]]
