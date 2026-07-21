@@ -27,17 +27,27 @@ export class FurnitureDynamicThumbnailVisualization extends IsometricImageFurniV
                 {
                     const image = new Image();
 
-                    image.src = thumbnailUrl;
-                    image.crossOrigin = '*';
+                    image.crossOrigin = 'anonymous';
 
                     image.onload = () =>
                     {
+                        if(!image.complete || (image.naturalWidth <= 0) || (image.naturalHeight <= 0))
+                        {
+                            this.setThumbnailImages(null);
+
+                            return;
+                        }
+
                         const texture = Texture.from(image);
 
                         texture.source.scaleMode = 'linear';
 
                         this.setThumbnailImages(texture);
                     };
+
+                    image.onerror = () => this.setThumbnailImages(null);
+
+                    image.src = thumbnailUrl;
                 }
                 else
                 {

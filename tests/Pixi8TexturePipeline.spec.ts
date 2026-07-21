@@ -3,12 +3,15 @@ import { deflate } from 'pako';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AssetManager } from '../src/api/asset/AssetManager';
 import { IAssetData } from '../src/api/asset/IAssetData';
+import { IGraphicAsset } from '../src/api/asset/IGraphicAsset';
 import { AlphaTolerance } from '../src/api/room/object/enum/AlphaTolerance';
 import { NitroBundle } from '../src/api/utils/NitroBundle';
 import { AdjustmentFilter } from '../src/pixi-proxy/adjustment-filter';
 import { CopyChannelFilter } from '../src/pixi-proxy/CopyChannelFilter';
 import { NitroAlphaFilter } from '../src/pixi-proxy/NitroAlphaFilter';
 import { PaletteMapFilter } from '../src/pixi-proxy/PaletteMapFilter';
+import { TextureUtils } from '../src/pixi-proxy/TextureUtils';
+import { IsometricImageFurniVisualization } from '../src/nitro/room/object/visualization/furniture/IsometricImageFurniVisualization';
 import { ExtendedSprite } from '../src/room/renderer/utils/ExtendedSprite';
 
 const createBundle = (files: Array<{ name: string, data: Uint8Array }>): ArrayBuffer =>
@@ -164,5 +167,36 @@ describe('Pixi 8 texture pipeline', () =>
         palette.destroy();
         copy.destroy();
         mask.destroy(true);
+    });
+
+    it('renders transformed camera pictures with their isometric bounds', () =>
+    {
+        class TestVisualization extends IsometricImageFurniVisualization
+        {
+            public transformThumbnail(texture: Texture, asset: IGraphicAsset): Texture
+            {
+                this._hasOutline = false;
+                this.setDirection(2);
+
+                return this.generateTransformedThumbnail(texture, asset);
+            }
+        }
+
+        const source = new BufferImageSource({
+            resource: new Uint8Array(360 * 360 * 4),
+            width: 360,
+            height: 360
+        });
+        const texture = new Texture({ source });
+        const writeTexture = vi.spyOn(TextureUtils, 'writeToRenderTexture')
+            .mockImplementation((_displayObject, renderTexture) => renderTexture);
+        const asset = { width: 112, height: 78 } as IGraphicAsset;
+        const transformed = new TestVisualization().transformThumbnail(texture, asset);
+
+        expect(transformed.width).toBe(112);
+        expect(transformed.height).toBe(105);
+        expect(writeTexture).toHaveBeenCalledWith(expect.anything(), transformed);
+
+        transformed.destroy(true);
     });
 });
