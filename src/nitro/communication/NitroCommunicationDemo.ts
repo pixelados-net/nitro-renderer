@@ -1,9 +1,9 @@
 import { IConnection, INitroCommunicationDemo, INitroCommunicationManager, NitroConfiguration, NitroLogger } from '../../api';
-import { NitroManager } from '../../core';
+import { DiffieHandshake, LegacyRSA, NitroManager, RC4Cipher } from '../../core';
 import { NitroCommunicationDemoEvent, SocketConnectionEvent } from '../../events';
 import { GetTickerTime } from '../../pixi-proxy';
 import { Nitro } from '../Nitro';
-import { AuthenticatedEvent, ClientHelloMessageComposer, ClientPingEvent, InfoRetrieveMessageComposer, PongMessageComposer, SSOTicketMessageComposer } from './messages';
+import { AuthenticatedEvent, ClientHelloMessageComposer, ClientPingEvent, CompleteDiffieHandshakeEvent, CompleteDiffieHandshakeMessageComposer, InfoRetrieveMessageComposer, InitDiffieHandshakeEvent, InitDiffieHandshakeMessageComposer, PongMessageComposer, SSOTicketMessageComposer } from './messages';
 
 export class NitroCommunicationDemo extends NitroManager implements INitroCommunicationDemo
 {
@@ -13,6 +13,8 @@ export class NitroCommunicationDemo extends NitroManager implements INitroCommun
     private _didConnect: boolean;
 
     private _pongInterval: any;
+    private _diffie: DiffieHandshake;
+    private _rsa: LegacyRSA;
 
     constructor(communication: INitroCommunicationManager)
     {
@@ -24,6 +26,8 @@ export class NitroCommunicationDemo extends NitroManager implements INitroCommun
         this._didConnect = false;
 
         this._pongInterval = null;
+        this._diffie = null;
+        this._rsa = null;
 
         this.onConnectionOpenedEvent = this.onConnectionOpenedEvent.bind(this);
         this.onConnectionClosedEvent = this.onConnectionClosedEvent.bind(this);
@@ -44,6 +48,8 @@ export class NitroCommunicationDemo extends NitroManager implements INitroCommun
 
         this._communication.registerMessageEvent(new ClientPingEvent(this.onClientPingEvent.bind(this)));
         this._communication.registerMessageEvent(new AuthenticatedEvent(this.onAuthenticatedEvent.bind(this)));
+        this._communication.registerMessageEvent(new InitDiffieHandshakeEvent(this.onInitDiffieHandshakeEvent.bind(this)));
+        this._communication.registerMessageEvent(new CompleteDiffieHandshakeEvent(this.onCompleteDiffieHandshakeEvent.bind(this)));
     }
 
     protected onDispose(): void
@@ -58,6 +64,8 @@ export class NitroCommunicationDemo extends NitroManager implements INitroCommun
         }
 
         this._handShaking = false;
+        this._diffie = null;
+        this._rsa = null;
 
         this.stopPonging();
 
@@ -80,7 +88,14 @@ export class NitroCommunicationDemo extends NitroManager implements INitroCommun
 
         connection.send(new ClientHelloMessageComposer(null, null, null, null));
 
-        this.tryAuthentication(connection);
+        if(this.diffieEnabled())
+        {
+            connection.send(new InitDiffieHandshakeMessageComposer());
+        }
+        else
+        {
+            this.tryAuthentication(connection);
+        }
     }
 
     private onConnectionClosedEvent(event: CloseEvent): void
@@ -138,6 +153,69 @@ export class NitroCommunicationDemo extends NitroManager implements INitroCommun
         this.dispatchCommunicationDemoEvent(NitroCommunicationDemoEvent.CONNECTION_AUTHENTICATED, event.connection);
 
         event.connection.send(new InfoRetrieveMessageComposer());
+    }
+
+    private onInitDiffieHandshakeEvent(event: InitDiffieHandshakeEvent): void
+    {
+        if(!event || !event.connection || !this.diffieEnabled()) return;
+
+        try
+        {
+            const parser = event.getParser();
+            const modulus = NitroConfiguration.getValue<string>('security.diffie.rsa.modulus', '');
+            const exponent = NitroConfiguration.getValue<string>('security.diffie.rsa.exponent', '3');
+
+            this._rsa = new LegacyRSA(modulus, exponent);
+
+            const prime = this._rsa.verifyString(parser.encryptedPrime);
+            const generator = this._rsa.verifyString(parser.encryptedGenerator);
+
+            this._diffie = new DiffieHandshake(prime, generator);
+
+            event.connection.send(new CompleteDiffieHandshakeMessageComposer(this._rsa.encryptString(this._diffie.publicKey)));
+        }
+
+        catch (error)
+        {
+            this.failDiffie(event.connection, error);
+        }
+    }
+
+    private onCompleteDiffieHandshakeEvent(event: CompleteDiffieHandshakeEvent): void
+    {
+        if(!event || !event.connection || !this._diffie || !this._rsa) return;
+
+        try
+        {
+            const parser = event.getParser();
+            const serverPublicKey = this._rsa.verifyString(parser.encryptedPublicKey);
+            const sharedKey = this._diffie.sharedKey(serverPublicKey);
+
+            event.connection.setEncryption(
+                new RC4Cipher(sharedKey),
+                parser.serverClientEncryption ? new RC4Cipher(sharedKey) : null);
+
+            this.tryAuthentication(event.connection);
+        }
+
+        catch (error)
+        {
+            this.failDiffie(event.connection, error);
+        }
+    }
+
+    private failDiffie(connection: IConnection, error: unknown): void
+    {
+        NitroLogger.error('Diffie compatibility handshake failed', error);
+
+        this.dispatchCommunicationDemoEvent(NitroCommunicationDemoEvent.CONNECTION_HANDSHAKE_FAILED, connection);
+
+        connection.dispose();
+    }
+
+    private diffieEnabled(): boolean
+    {
+        return NitroConfiguration.getValue<boolean>('security.diffie.enabled', false);
     }
 
     private startHandshake(connection: IConnection): void

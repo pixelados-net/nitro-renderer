@@ -12,7 +12,7 @@ A game server speaks a binary protocol over a single persistent websocket. The r
 
 - `init(socketUrl)` notifies a state listener, then opens the socket, wiring `open`/`close`/`error`/`message` listeners.
 - `open`/`close`/`error` are re-dispatched as `SocketConnectionEvent.CONNECTION_OPENED` / `CONNECTION_CLOSED` / `CONNECTION_ERROR` on the connection's own event bus: this is what `NitroCommunicationManager` listens for.
-- `message` does **not** dispatch an event directly. The incoming `Blob` is read into an `ArrayBuffer` via `FileReader`, appended to an internal `dataBuffer` (a manual byte-buffer concatenation), and `processReceivedData()` is called to attempt decoding.
+- `message` does **not** dispatch an event directly. The socket requests `ArrayBuffer` messages, optionally decrypts them through the negotiated server-to-client stream, appends them to an internal `dataBuffer`, and calls `processReceivedData()` to attempt decoding. A `FileReader` fallback remains for nonconforming socket implementations that still deliver a `Blob`.
 - `dataBuffer` is a public getter/setter because the codec (see [[PACKET-PROTOCOL]]) needs to both read *and* trim it directly: decoding slices off exactly the bytes it consumed, leaving any trailing partial packet in place for next time.
 
 **Readiness gating.** Messages sent or received before the connection is marked ready/authenticated are queued (`_pendingClientMessages` / `_pendingServerMessages`) rather than processed immediately, and flushed once `onReady()` runs. This is what holds outgoing traffic during an SSO/handshake window without the caller needing to know the handshake is in progress.
@@ -44,6 +44,24 @@ Nitro.instance.communication.connection.send(new RoomUnitChatComposer('hello', 0
 ```
 
 `SocketConnection.send()` looks up the numeric header id for the composer's class via `MessageClassManager`, asks the composer for its typed payload array (`getMessageArray()`), encodes it, and writes the result to the socket (a no-op if the socket isn't open yet: see the readiness gate above).
+
+## Optional legacy Diffie and RC4 compatibility
+
+The normal browser security boundary remains WSS/TLS. Servers that also require Habbo's historical in-protocol handshake can enable the compatibility flow in `renderer-config.json`:
+
+```json
+{
+    "security.diffie.enabled": true,
+    "security.diffie.rsa.modulus": "<hexadecimal server RSA modulus>",
+    "security.diffie.rsa.exponent": "3"
+}
+```
+
+The modulus and exponent are public verification material and must match the Pixels server. The RSA private exponent must never be placed in renderer configuration or any browser bundle.
+
+When enabled, `NitroCommunicationDemo` sends Diffie init after `ClientHello`, verifies the RSA-signed prime and generator, returns an RSA-encrypted client public value, verifies the server public value, and derives two independent RC4 stream instances from the shared key. `SocketConnection` activates them only after the plaintext completion response has been parsed, then sends the SSO ticket. When disabled, authentication follows the existing plain protocol path over WSS.
+
+This mode exists for protocol compatibility. RC4 and the legacy 128-bit Diffie parameters are obsolete cryptography and do not replace HTTPS/WSS.
 
 ## Receiving a message (high level)
 
