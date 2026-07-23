@@ -1,4 +1,4 @@
-import { ICodec, ICommunicationManager, IConnection, IConnectionStateListener, IMessageComposer, IMessageConfiguration, IMessageDataWrapper, IMessageEvent, NitroLogger, WebSocketEventEnum } from '../../api';
+import { ICodec, ICommunicationManager, IConnection, IConnectionCipher, IConnectionStateListener, IMessageComposer, IMessageConfiguration, IMessageDataWrapper, IMessageEvent, NitroLogger, WebSocketEventEnum } from '../../api';
 import { SocketConnectionEvent } from '../../events';
 import { EventDispatcher } from '../common';
 import { EvaWireFormat } from './codec';
@@ -18,6 +18,8 @@ export class SocketConnection extends EventDispatcher implements IConnection
     private _pendingServerMessages: IMessageDataWrapper[];
 
     private _isAuthenticated: boolean;
+    private _clientToServerEncryption: IConnectionCipher;
+    private _serverToClientEncryption: IConnectionCipher;
 
     constructor(communicationManager: ICommunicationManager, stateListener: IConnectionStateListener)
     {
@@ -35,6 +37,8 @@ export class SocketConnection extends EventDispatcher implements IConnection
         this._pendingServerMessages = [];
 
         this._isAuthenticated = false;
+        this._clientToServerEncryption = null;
+        this._serverToClientEncryption = null;
 
         this.onOpen = this.onOpen.bind(this);
         this.onClose = this.onClose.bind(this);
@@ -63,6 +67,8 @@ export class SocketConnection extends EventDispatcher implements IConnection
         this._messages = null;
         this._codec = null;
         this._dataBuffer = null;
+        this._clientToServerEncryption = null;
+        this._serverToClientEncryption = null;
     }
 
     public onReady(): void
@@ -87,6 +93,7 @@ export class SocketConnection extends EventDispatcher implements IConnection
 
         this._dataBuffer = new ArrayBuffer(0);
         this._socket = new WebSocket(socketUrl);
+        this._socket.binaryType = 'arraybuffer';
 
         this._socket.addEventListener(WebSocketEventEnum.CONNECTION_OPENED, this.onOpen);
         this._socket.addEventListener(WebSocketEventEnum.CONNECTION_CLOSED, this.onClose);
@@ -127,18 +134,29 @@ export class SocketConnection extends EventDispatcher implements IConnection
     {
         if(!event) return;
 
-        //this.dispatchConnectionEvent(SocketConnectionEvent.CONNECTION_MESSAGE, event);
+        if(event.data instanceof ArrayBuffer)
+        {
+            this.appendReceivedData(event.data);
+
+            return;
+        }
 
         const reader = new FileReader();
 
         reader.readAsArrayBuffer(event.data);
-
         reader.onloadend = () =>
         {
-            this._dataBuffer = this.concatArrayBuffers(this._dataBuffer, (reader.result as ArrayBuffer));
-
-            this.processReceivedData();
+            this.appendReceivedData(reader.result as ArrayBuffer);
         };
+    }
+
+    private appendReceivedData(source: ArrayBuffer): void
+    {
+        const data = this._serverToClientEncryption ? this._serverToClientEncryption.process(source) : source;
+
+        this._dataBuffer = this.concatArrayBuffers(this._dataBuffer, data);
+
+        this.processReceivedData();
     }
 
     private dispatchConnectionEvent(type: string, event: Event): void
@@ -149,6 +167,14 @@ export class SocketConnection extends EventDispatcher implements IConnection
     public authenticated(): void
     {
         this._isAuthenticated = true;
+    }
+
+    public setEncryption(clientToServer: IConnectionCipher, serverToClient: IConnectionCipher = null): void
+    {
+        if(!clientToServer) throw new Error('Client-to-server encryption is required');
+
+        this._clientToServerEncryption = clientToServer;
+        this._serverToClientEncryption = serverToClient;
     }
 
     public send(...composers: IMessageComposer<unknown[]>[]): boolean
@@ -201,7 +227,7 @@ export class SocketConnection extends EventDispatcher implements IConnection
     {
         if(this._socket.readyState !== WebSocket.OPEN) return;
 
-        this._socket.send(buffer);
+        this._socket.send(this._clientToServerEncryption ? this._clientToServerEncryption.process(buffer) : buffer);
     }
 
     public processReceivedData(): void

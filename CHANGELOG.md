@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- Added optional RSA-signed Diffie-Hellman negotiation and independent
+  client/server RC4 streams for compatibility with Pixels and legacy Habbo
+  protocol servers.
+- Added renderer configuration for the public RSA modulus and exponent while
+  keeping the server private exponent out of browser bundles.
+
 ## 3.0.3 - 2026-07-13
 
 ### Fixed
