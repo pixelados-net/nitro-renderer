@@ -125,6 +125,12 @@ export class RoomSpriteCanvas implements IRoomRenderingCanvas
 
             this._master.interactiveChildren = false;
             this._master.cullableChildren = false;
+
+            // Hidden until RoomEngine.updateRoomCamera positions the real camera for the first
+            // time. Without this, the scene renders one or more frames at RoomGeometry's
+            // room-agnostic default location (11, 11, 5) before instantly snapping to the real
+            // one, which reads as the whole room (floor, walls, avatar) jumping on entry.
+            this._master.visible = false;
         }
 
         if(!this._display)
