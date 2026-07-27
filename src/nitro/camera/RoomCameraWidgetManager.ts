@@ -32,7 +32,7 @@ export class RoomCameraWidgetManager implements IRoomCameraWidgetManager
     private async loadEffects(): Promise<void>
     {
 
-        const imagesUrl = NitroConfiguration.getValue<string>('image.library.url') + 'Habbo-Stories/';
+        const imagesUrl = NitroConfiguration.getValue<string>('camera.effects.url');
         const effects = NitroConfiguration.getValue<{ name: string, colorMatrix?: ColorMatrix, minLevel: number, blendMode?: number, enabled: boolean }[]>('camera.available.effects');
 
         for(const effect of effects)
