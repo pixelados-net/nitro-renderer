@@ -1329,6 +1329,8 @@ export class RoomEngine extends NitroManager implements IRoomEngine, IRoomCreato
                     // The camera now reflects this room's real bounds; reveal the canvas RoomSpriteCanvas
                     // hid at construction so the visible first frame is already correctly positioned.
                     if(renderingCanvas.master) renderingCanvas.master.visible = true;
+
+                    this.events.dispatchEvent(new RoomEngineEvent(RoomEngineEvent.CAMERA_READY, roomId));
                 }
                 const _local_45 = roomGeometry.getScreenPoint(_local_15);
                 const _local_46 = new Vector3d(0, 0, 0);
