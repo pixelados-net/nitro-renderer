@@ -112,6 +112,54 @@ describe('Pixi 8 texture pipeline', () =>
         expect(manager.getTexture('test_icon')).toBe(spritesheet.textures['test_icon.png']);
     });
 
+    it('destroys the GPU texture source when a collection is disposed', async () =>
+    {
+        const source = new BufferImageSource({
+            resource: Uint8Array.from([255, 255, 255, 255]),
+            width: 1,
+            height: 1
+        });
+        const data = {
+            name: 'test_dispose',
+            assets: { icon: { source: 'icon', x: 0, y: 0 } },
+            spritesheet: {
+                frames: {
+                    'test_dispose_icon.png': {
+                        frame: { x: 0, y: 0, w: 1, h: 1 },
+                        rotated: false,
+                        trimmed: false,
+                        spriteSourceSize: { x: 0, y: 0, w: 1, h: 1 },
+                        sourceSize: { w: 1, h: 1 }
+                    }
+                },
+                meta: {
+                    app: 'nitro-renderer',
+                    version: '3.0.0',
+                    image: 'test_dispose.png',
+                    format: 'RGBA8888',
+                    size: { w: 1, h: 1 },
+                    scale: '1'
+                }
+            }
+        } as IAssetData;
+        const spritesheet = new Spritesheet(new Texture({ source }), data.spritesheet);
+
+        await spritesheet.parse();
+
+        const manager = new AssetManager();
+        const collection = manager.createCollection(data, spritesheet);
+        const texture = collection.getAsset('icon')?.texture;
+
+        expect(source.destroyed).toBe(false);
+        expect(texture.destroyed).toBe(false);
+
+        collection.dispose();
+
+        expect(texture.destroyed).toBe(true);
+        expect(source.destroyed).toBe(true);
+        expect(collection.textures.size).toBe(0);
+    });
+
     it('constructs pooled room sprites without passing null to Pixi', () =>
     {
         const sprite = new ExtendedSprite();

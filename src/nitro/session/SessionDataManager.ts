@@ -310,9 +310,10 @@ export class SessionDataManager extends NitroManager implements ISessionDataMana
 
         if(parser.resultCode !== ChangeUserNameResultMessageEvent.NAME_OK) return;
 
+        this._name = parser.name;
         this._canChangeName = false;
 
-        this.events.dispatchEvent(new UserNameUpdateEvent(parser.name));
+        this.events.dispatchEvent(new UserNameUpdateEvent(this._name));
     }
 
     private onUserNameChangeMessageEvent(event: UserNameChangeMessageEvent): void

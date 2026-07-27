@@ -690,6 +690,13 @@ export class AvatarImage implements IAvatarImage, IAvatarEffectListener
             {
                 if(!this._effectManager.isAvatarEffectReady(parseInt(k.actionParameter))) this._effectManager.downloadAvatarEffect(parseInt(k.actionParameter), this);
             }
+
+            if(k.actionType === AvatarAction.DANCE)
+            {
+                const animation = `${ AvatarAction.DANCE }.${ k.actionParameter }`;
+
+                if(!this._effectManager.isAvatarAnimationReady(animation)) this._effectManager.downloadAvatarAnimation(animation, this);
+            }
         }
 
         this.resetActions();
@@ -1100,5 +1107,16 @@ export class AvatarImage implements IAvatarImage, IAvatarEffectListener
 
             if(this._effectListener) this._effectListener.resetEffect(effect);
         }
+    }
+
+    public resetAnimation(animation: string): void
+    {
+        this.resetActions();
+        this.setActionsToParts();
+
+        this._animationHasResetOnToggle = true;
+        this._changes = true;
+
+        if(this._effectListener) this._effectListener.resetAnimation?.(animation);
     }
 }

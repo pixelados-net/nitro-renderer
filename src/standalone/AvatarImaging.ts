@@ -171,6 +171,8 @@ export class AvatarImaging
 
                     resolve();
                 },
+                resetAnimation: () =>
+                {},
                 dispose: () =>
                 {},
                 disposed: false

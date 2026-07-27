@@ -67,6 +67,30 @@ export class GraphicAssetCollection implements IGraphicAssetCollection
 
             this._assets.clear();
         }
+
+        if(this._textures)
+        {
+            // Textures parsed from the same spritesheet share one TextureSource; destroying the
+            // GPU-resident source once per unique instance (rather than per texture) avoids
+            // redundant/unsafe repeat destroys while still covering textures added later via
+            // addAsset() that own an independent source.
+            const sources = new Set<TextureSource>();
+
+            if(this._textureSource) sources.add(this._textureSource);
+
+            for(const texture of this._textures.values())
+            {
+                if(texture.source) sources.add(texture.source);
+
+                texture.destroy();
+            }
+
+            for(const source of sources) source.destroy();
+
+            this._textures.clear();
+        }
+
+        this._textureSource = null;
     }
 
     public addReference(): void

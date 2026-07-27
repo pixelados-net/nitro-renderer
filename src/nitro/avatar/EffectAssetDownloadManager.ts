@@ -16,8 +16,9 @@ export class EffectAssetDownloadManager extends EventDispatcher
 
     private _missingMandatoryLibs: string[];
     private _effectMap: Map<string, EffectAssetDownloadLibrary[]>;
-    private _initDownloadBuffer: [number, IAvatarEffectListener][];
+    private _initDownloadBuffer: [string, IAvatarEffectListener, boolean][];
     private _effectListeners: Map<string, IAvatarEffectListener[]>;
+    private _animationListeners: Map<string, IAvatarEffectListener[]>;
     private _incompleteEffects: Map<string, EffectAssetDownloadLibrary[]>;
     private _pendingDownloadQueue: EffectAssetDownloadLibrary[];
     private _currentDownloads: EffectAssetDownloadLibrary[];
@@ -34,6 +35,7 @@ export class EffectAssetDownloadManager extends EventDispatcher
         this._missingMandatoryLibs = NitroConfiguration.getValue<string[]>('avatar.mandatory.effect.libraries');
         this._effectMap = new Map();
         this._effectListeners = new Map();
+        this._animationListeners = new Map();
         this._incompleteEffects = new Map();
         this._initDownloadBuffer = [];
         this._pendingDownloadQueue = [];
@@ -119,29 +121,40 @@ export class EffectAssetDownloadManager extends EventDispatcher
 
     public downloadAvatarEffect(id: number, listener: IAvatarEffectListener): void
     {
+        this.downloadAvatarAnimationById(id.toString(), listener, true);
+    }
+
+    public downloadAvatarAnimation(id: string, listener: IAvatarEffectListener): void
+    {
+        this.downloadAvatarAnimationById(id, listener, false);
+    }
+
+    private downloadAvatarAnimationById(id: string, listener: IAvatarEffectListener, effect: boolean): void
+    {
         if(!this._isReady || !this._structure.renderManager.isReady)
         {
-            this._initDownloadBuffer.push([id, listener]);
+            this._initDownloadBuffer.push([id, listener, effect]);
 
             return;
         }
 
-        const pendingLibraries = this.getAvatarEffectPendingLibraries(id);
+        const pendingLibraries = this.getAvatarAnimationPendingLibraries(id);
 
         if(pendingLibraries && pendingLibraries.length)
         {
             if(listener && !listener.disposed)
             {
-                let listeners = this._effectListeners.get(id.toString());
+                const listenerMap = effect ? this._effectListeners : this._animationListeners;
+                let listeners = listenerMap.get(id);
 
                 if(!listeners) listeners = [];
 
-                listeners.push(listener);
+                if(listeners.indexOf(listener) === -1) listeners.push(listener);
 
-                this._effectListeners.set(id.toString(), listeners);
+                listenerMap.set(id, listeners);
             }
 
-            this._incompleteEffects.set(id.toString(), pendingLibraries);
+            this._incompleteEffects.set(id, pendingLibraries);
 
             for(const library of pendingLibraries)
             {
@@ -152,7 +165,15 @@ export class EffectAssetDownloadManager extends EventDispatcher
         }
         else
         {
-            if(listener && !listener.disposed) listener.resetEffect(id);
+            this.registerLoadedAnimations(id);
+
+            if(!effect && !this._structure.getAnimation(id)) return;
+
+            if(listener && !listener.disposed)
+            {
+                if(effect) listener.resetEffect(parseInt(id));
+                else listener.resetAnimation?.(id);
+            }
         }
     }
 
@@ -160,9 +181,9 @@ export class EffectAssetDownloadManager extends EventDispatcher
     {
         if(!event) return;
 
-        for(const [id, listener] of this._initDownloadBuffer)
+        for(const [id, listener, effect] of this._initDownloadBuffer)
         {
-            this.downloadAvatarEffect(id, listener);
+            this.downloadAvatarAnimationById(id, listener, effect);
         }
 
         this._initDownloadBuffer = [];
@@ -193,9 +214,9 @@ export class EffectAssetDownloadManager extends EventDispatcher
             {
                 loadedEffects.push(id);
 
-                const listeners = this._effectListeners.get(id);
+                const effectListeners = this._effectListeners.get(id) || [];
 
-                for(const listener of listeners)
+                for(const listener of effectListeners)
                 {
                     if(!listener || listener.disposed) continue;
 
@@ -204,25 +225,25 @@ export class EffectAssetDownloadManager extends EventDispatcher
 
                 this._effectListeners.delete(id);
 
+                const animationListeners = this._animationListeners.get(id) || [];
+
+                for(const listener of animationListeners)
+                {
+                    if(!listener || listener.disposed) continue;
+
+                    listener.resetAnimation?.(id);
+                }
+
+                this._animationListeners.delete(id);
+
                 this.dispatchEvent(new NitroEvent(EffectAssetDownloadManager.LIBRARY_LOADED));
             }
         }
 
         for(const id of loadedEffects) this._incompleteEffects.delete(id);
 
-        let index = 0;
-
-        while(index < this._currentDownloads.length)
-        {
-            const download = this._currentDownloads[index];
-
-            if(download)
-            {
-                if(download.libraryName === event.library.libraryName) this._currentDownloads.splice(index, 1);
-            }
-
-            index++;
-        }
+        this.removeCurrentDownload(event.library.libraryName);
+        this.processDownloadQueue();
     }
 
     public processMissingLibraries(): void
@@ -235,7 +256,16 @@ export class EffectAssetDownloadManager extends EventDispatcher
 
             const map = this._effectMap.get(library);
 
-            if(map) for(const effect of map) effect && this.downloadLibrary(effect);
+            if(map)
+            {
+                for(const effect of map)
+                {
+                    if(!effect) continue;
+
+                    if(effect.isLoaded) this._structure.registerAnimation(effect.animation);
+                    else this.downloadLibrary(effect);
+                }
+            }
         }
     }
 
@@ -246,18 +276,28 @@ export class EffectAssetDownloadManager extends EventDispatcher
             return false;
         }
 
-        const pendingLibraries = this.getAvatarEffectPendingLibraries(effect);
-
-        return !pendingLibraries.length;
+        return !this.getAvatarAnimationPendingLibraries(effect.toString()).length;
     }
 
-    private getAvatarEffectPendingLibraries(id: number): EffectAssetDownloadLibrary[]
+    public isAvatarAnimationReady(animation: string): boolean
+    {
+        if(!this._isReady || !this._structure.renderManager.isReady)
+        {
+            return false;
+        }
+
+        const pendingLibraries = this.getAvatarAnimationPendingLibraries(animation);
+
+        return !pendingLibraries.length && !!this._structure.getAnimation(animation);
+    }
+
+    private getAvatarAnimationPendingLibraries(id: string): EffectAssetDownloadLibrary[]
     {
         const pendingLibraries: EffectAssetDownloadLibrary[] = [];
 
         if(!this._structure) return pendingLibraries;
 
-        const libraries = this._effectMap.get(id.toString());
+        const libraries = this._effectMap.get(id);
 
         if(libraries)
         {
@@ -270,6 +310,18 @@ export class EffectAssetDownloadManager extends EventDispatcher
         }
 
         return pendingLibraries;
+    }
+
+    private registerLoadedAnimations(id: string): void
+    {
+        const libraries = this._effectMap.get(id) || [];
+
+        for(const library of libraries)
+        {
+            if(!library || !library.isLoaded || !library.animation) continue;
+
+            this._structure.registerAnimation(library.animation);
+        }
     }
 
     private downloadLibrary(library: EffectAssetDownloadLibrary): void
@@ -285,13 +337,28 @@ export class EffectAssetDownloadManager extends EventDispatcher
 
     private processDownloadQueue(): void
     {
-        while(this._pendingDownloadQueue.length)
+        while(this._pendingDownloadQueue.length && (this._currentDownloads.length < EffectAssetDownloadManager.MAX_DOWNLOADS))
         {
-            const library = this._pendingDownloadQueue[0];
+            const library = this._pendingDownloadQueue.shift();
 
-            library.downloadAsset();
+            this._currentDownloads.push(library);
 
-            this._currentDownloads.push(this._pendingDownloadQueue.shift());
+            library.downloadAsset()
+                .catch(error => NitroLogger.error(error))
+                .finally(() =>
+                {
+                    if(library.isLoaded) return;
+
+                    this.removeCurrentDownload(library.libraryName);
+                    this.processDownloadQueue();
+                });
         }
+    }
+
+    private removeCurrentDownload(libraryName: string): void
+    {
+        const index = this._currentDownloads.findIndex(library => library && (library.libraryName === libraryName));
+
+        if(index >= 0) this._currentDownloads.splice(index, 1);
     }
 }

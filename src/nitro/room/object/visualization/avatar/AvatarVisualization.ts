@@ -992,6 +992,11 @@ export class AvatarVisualization extends RoomObjectSpriteVisualization implement
         this.clearAvatar();
     }
 
+    public resetAnimation(animation: string): void
+    {
+        this.clearAvatar();
+    }
+
     private clearAvatar(): void
     {
         for(const avatar of this._cachedAvatars.getValues()) avatar && avatar.dispose();
