@@ -1,6 +1,6 @@
 import { AvatarAction, AvatarScaleType, AvatarSetType, IAvatarImage } from '../api';
 import { AvatarRenderManager } from '../nitro/avatar';
-import { TextureUtils } from '../pixi-proxy';
+import { renderAvatarAnimationFrames } from './AvatarEffectImaging';
 
 export interface IAvatarRenderOptions
 {
@@ -43,6 +43,11 @@ export class AvatarImaging
 
         try
         {
+            if(options.effect || options.dance)
+            {
+                return renderAvatarAnimationFrames(avatarImage, setType, 1)[0];
+            }
+
             return avatarImage.getCroppedImage(setType);
         }
 
@@ -71,20 +76,9 @@ export class AvatarImaging
         const avatarImage = await this.createAvatarImage(options);
 
         const setType = (options.headOnly ? AvatarSetType.HEAD : AvatarSetType.FULL);
-        const images: HTMLImageElement[] = [];
-
         try
         {
-            for(let frame = 0; frame < frameCount; frame++)
-            {
-                const texture = avatarImage.getImage(setType, false);
-
-                if(texture) images.push(TextureUtils.generateImage(texture));
-
-                avatarImage.updateAnimationByFrames(1);
-            }
-
-            return images;
+            return renderAvatarAnimationFrames(avatarImage, setType, frameCount);
         }
 
         finally
