@@ -102,6 +102,35 @@ Nitro.instance.communication.registerMessageEvent(
 
 Adding a new **outgoing** packet is steps 1 and 3 mirrored for `OutgoingHeader.ts`/a composer class, registered in `_composers` instead: then simply `connection.send(new MyComposer(...))`.
 
+## Wired Creator Tools extension
+
+Pixels reserves headers `6300` through `6304` for its local Wired extension. Creator Tools uses `6300` through `6303`; `6304` carries a deliberate avatar click. Creator Tools packets are requested only while the panel is open, so the normal room update path performs no JSON parsing and creates no Creator Tools state.
+
+The server messages are:
+
+| Header | Event | Payload |
+|---|---|---|
+| `6300` | `WiredCreatorToolsSnapshotEvent` | Schema version followed by a JSON snapshot document |
+| `6301` | `WiredCreatorToolsMutationResultEvent` | Success, result code and a JSON result document |
+| `6302` | `WiredCreatorToolsInspectionEvent` | Schema version followed by a JSON inspection document |
+| `6303` | `WiredCreatorToolsOpenEvent` | Room id and initial tab |
+
+The client messages use the same numeric range in the opposite direction:
+
+| Header | Composer | Payload |
+|---|---|---|
+| `6300` | `WiredCreatorToolsRefreshComposer` | Room id |
+| `6301` | `WiredCreatorToolsVariableUpdateComposer` | Room, operation, scope, decimal entity id, name, integer value and string value |
+| `6302` | `WiredCreatorToolsInspectComposer` | Room, entity type and decimal entity id |
+| `6303` | `WiredCreatorToolsSettingsUpdateComposer` | Room, personal live refresh and durable room box visibility |
+| `6304` | `WiredUserClickComposer` | Room unit index selected by a normal avatar click |
+
+The entity identifier, variable scope identifier and integer variable value are decimal strings on the wire. EvaWire JavaScript numbers are encoded as signed 32 bit integers, while Pixels identifiers and variables may use signed 64 bit values. Strings preserve the full range without rounding. Room identifiers and deliberate avatar clicks remain native protocol integers because they identify active room state.
+
+The versioned JSON documents allow the diagnostic schema to grow independently from the stable packet envelope. Parsers retain the source document and expose an already parsed object. Invalid JSON rejects the packet without throwing into the connection loop.
+
+`selectWiredCreatorToolsEntity` bridges an inspection row to the existing room selection arrow. It delegates to `IRoomEngine.selectRoomObject` and does not introduce a second highlight system or any per frame work.
+
 ## `NitroBundle` is not this protocol
 
 `NitroBundle` (`src/api/utils/NitroBundle.ts`) parses `.nitro` **asset** files fetched over plain HTTP (avatar/furni graphics) (it has no `IConnection`, no `ICodec`, and no relationship to EvaWire beyond reusing `BinaryReader` for convenience. Its structure is unrelated: `int16 fileCount`, then per file `int16 nameLength` + name + `int32 fileLength` + raw (zlib-inflated) bytes. If you see "int32 length prefix" in both places, that's coincidence, not shared framing) see the asset pipeline section of [[ARCHITECTURE]] for where this fits.

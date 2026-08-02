@@ -267,6 +267,10 @@ export class IncomingHeader
     public static WIRED_REWARD = 178;
     public static WIRED_SAVE = 1155;
     public static WIRED_TRIGGER = 383;
+    public static WIRED_CREATOR_TOOLS_SNAPSHOT = 6300;
+    public static WIRED_CREATOR_TOOLS_MUTATION_RESULT = 6301;
+    public static WIRED_CREATOR_TOOLS_INSPECTION = 6302;
+    public static WIRED_CREATOR_TOOLS_OPEN = 6303;
     public static PLAYING_GAME = 448;
     public static FURNITURE_STATE_2 = 3431;
     public static REMOVE_BOT_FROM_INVENTORY = 233;
