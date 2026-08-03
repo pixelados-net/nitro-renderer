@@ -10,10 +10,10 @@ export interface IRoomContentLoader
     dispose: () => void;
     initialize(events: IEventDispatcher): void;
     setSessionDataManager(sessionData: ISessionDataManager): void;
-    downloadAsset(type: string, events: IEventDispatcher): void;
+    downloadAsset(type: string, events: IEventDispatcher, category?: number): void;
     isLoaderType(type: string): boolean;
     getCollection(name: string): IGraphicAssetCollection;
-    getPlaceholderName(type: string): string;
+    getPlaceholderName(type: string, category?: number): string;
     getCategoryForType(type: string): number;
     setRoomObjectRoomId(object: IRoomObject, roomId: string): void;
     getFurnitureFloorNameForTypeId(typeId: number): string;

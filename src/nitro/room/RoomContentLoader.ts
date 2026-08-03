@@ -369,11 +369,11 @@ export class RoomContentLoader implements IFurnitureDataListener, IRoomContentLo
         }
     }
 
-    public getPlaceholderName(type: string): string
+    public getPlaceholderName(type: string, category?: number): string
     {
-        const category = this.getCategoryForType(type);
+        const resolvedCategory = (category ?? this.getCategoryForType(type));
 
-        switch(category)
+        switch(resolvedCategory)
         {
             case RoomObjectCategory.FLOOR:
                 return RoomContentLoader.PLACE_HOLDER;
@@ -479,9 +479,9 @@ export class RoomContentLoader implements IFurnitureDataListener, IRoomContentLo
         return false;
     }
 
-    public async downloadAsset(type: string, events: IEventDispatcher): Promise<void>
+    public async downloadAsset(type: string, events: IEventDispatcher, category?: number): Promise<void>
     {
-        const assetUrl: string = this.getAssetUrls(type)?.[0];
+        const assetUrl: string = this.getAssetUrls(type, null, false, category)?.[0];
 
         if(!assetUrl || !assetUrl.length) return;
 
@@ -567,7 +567,7 @@ export class RoomContentLoader implements IFurnitureDataListener, IRoomContentLo
         return existing;
     }
 
-    public getAssetUrls(type: string, param: string = null, icon: boolean = false): string[]
+    public getAssetUrls(type: string, param: string = null, icon: boolean = false, category?: number): string[]
     {
         switch(type)
         {
@@ -584,9 +584,9 @@ export class RoomContentLoader implements IFurnitureDataListener, IRoomContentLo
             case RoomContentLoader.SELECTION_ARROW:
                 return [this.getAssetUrlWithGenericBase(RoomContentLoader.SELECTION_ARROW)];
             default: {
-                const category = this.getCategoryForType(type);
+                const resolvedCategory = (category ?? this.getCategoryForType(type));
 
-                if((category === RoomObjectCategory.FLOOR) || (category === RoomObjectCategory.WALL))
+                if((resolvedCategory === RoomObjectCategory.FLOOR) || (resolvedCategory === RoomObjectCategory.WALL))
                 {
                     const name = this.getAssetAliasName(type);
 
@@ -602,7 +602,7 @@ export class RoomContentLoader implements IFurnitureDataListener, IRoomContentLo
                     return [assetUrl];
                 }
 
-                if(category === RoomObjectCategory.UNIT)
+                if(resolvedCategory === RoomObjectCategory.UNIT)
                 {
                     return [this.getAssetUrlWithPetBase(type)];
                 }

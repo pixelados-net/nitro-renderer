@@ -1,4 +1,5 @@
-import { IObjectData, IVector3D, LegacyDataType, RoomObjectUserType, Vector3d } from '../api';
+import { Graphics, type PointData } from 'pixi.js';
+import { IObjectData, IRoomGeometry, IRoomRenderingCanvas, IVector3D, LegacyDataType, RoomObjectUserType, Vector3d } from '../api';
 import { FloorHeightMapMessageParser } from '../nitro/communication';
 import { RoomEngine } from '../nitro/room';
 import { RoomPlaneParser } from '../nitro/room/object/RoomPlaneParser';
@@ -37,6 +38,16 @@ export interface IRoomAvatarDefinition
     effect?: number;
 }
 
+export interface IRoomFootprintDefinition
+{
+    x: number;
+    y: number;
+    z?: number;
+    width: number;
+    length: number;
+    height?: number;
+}
+
 export interface IRoomRenderOptions
 {
     floorPlan?: string;
@@ -50,6 +61,7 @@ export interface IRoomRenderOptions
     height?: number;
     scale?: number;
     backgroundColor?: number;
+    highlightedFootprint?: IRoomFootprintDefinition;
     timeoutMs?: number;
 }
 
@@ -303,7 +315,25 @@ export class RoomImaging
 
         if(!canvas) throw new Error('nitro_imaging_room_canvas_unavailable');
 
-        const texture = canvas.getDisplayAsTexture();
+        const footprint = this.createFootprintHighlight(canvas, geometry, options.highlightedFootprint);
+
+        if(footprint) canvas.display.addChild(footprint);
+
+        let texture = null;
+
+        try
+        {
+            texture = canvas.getDisplayAsTexture();
+        }
+        finally
+        {
+            if(footprint)
+            {
+                if(footprint.parent) footprint.parent.removeChild(footprint);
+
+                footprint.destroy();
+            }
+        }
 
         if(!texture) throw new Error('nitro_imaging_room_capture_failed');
 
@@ -312,6 +342,63 @@ export class RoomImaging
         texture.destroy(true);
 
         return image;
+    }
+
+    private createFootprintHighlight(canvas: IRoomRenderingCanvas, geometry: IRoomGeometry, definition?: IRoomFootprintDefinition): Graphics
+    {
+        if(!definition || !geometry || !canvas) return null;
+
+        const width = Math.min(20, Math.max(1, Math.round(definition.width)));
+        const length = Math.min(20, Math.max(1, Math.round(definition.length)));
+        const baseHeight = (definition.z || 0);
+        const stackHeight = Math.max(0, (definition.height || 0));
+        const graphic = new Graphics();
+
+        for(let x = 0; x < width; x++)
+        {
+            for(let y = 0; y < length; y++)
+            {
+                const points = this.projectTile(canvas, geometry, (definition.x + x), (definition.y + y), baseHeight);
+
+                graphic.poly(points, true).fill({ color: 0x2196F3, alpha: 0.28 }).stroke({ color: 0x2196F3, width: 2 });
+            }
+        }
+
+        if(stackHeight > 0)
+        {
+            for(let x = 0; x < width; x++)
+            {
+                for(let y = 0; y < length; y++)
+                {
+                    const base = this.projectTile(canvas, geometry, (definition.x + x), (definition.y + y), baseHeight);
+                    const elevated = this.projectTile(canvas, geometry, (definition.x + x), (definition.y + y), (baseHeight + stackHeight));
+
+                    graphic.poly(elevated, true).fill({ color: 0xFFCC33, alpha: 0.24 }).stroke({ color: 0xEEBB24, width: 2 });
+
+                    if((x === 0) && (y === 0)) graphic.moveTo(base[0].x, base[0].y).lineTo(elevated[0].x, elevated[0].y).stroke({ color: 0xEEBB24, width: 2 });
+                    if((x === (width - 1)) && (y === 0)) graphic.moveTo(base[1].x, base[1].y).lineTo(elevated[1].x, elevated[1].y).stroke({ color: 0xEEBB24, width: 2 });
+                    if((x === (width - 1)) && (y === (length - 1))) graphic.moveTo(base[2].x, base[2].y).lineTo(elevated[2].x, elevated[2].y).stroke({ color: 0xEEBB24, width: 2 });
+                    if((x === 0) && (y === (length - 1))) graphic.moveTo(base[3].x, base[3].y).lineTo(elevated[3].x, elevated[3].y).stroke({ color: 0xEEBB24, width: 2 });
+                }
+            }
+        }
+
+        return graphic;
+    }
+
+    private projectTile(canvas: IRoomRenderingCanvas, geometry: IRoomGeometry, x: number, y: number, z: number): PointData[]
+    {
+        return [
+            new Vector3d((x - 0.5), (y - 0.5), z),
+            new Vector3d((x + 0.5), (y - 0.5), z),
+            new Vector3d((x + 0.5), (y + 0.5), z),
+            new Vector3d((x - 0.5), (y + 0.5), z)
+        ].map(location =>
+        {
+            const point = geometry.getScreenPoint(location);
+
+            return { x: (point.x + (canvas.width / 2)), y: (point.y + (canvas.height / 2)) };
+        });
     }
 
     private waitTicks(count: number): Promise<void>

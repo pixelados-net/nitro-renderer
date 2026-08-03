@@ -137,9 +137,9 @@ export class RoomManager extends NitroManager implements IRoomManager, IRoomInst
             {
                 isLoading = true;
 
-                this._contentLoader.downloadAsset(type, this.events);
+                this._contentLoader.downloadAsset(type, this.events, category);
 
-                assetName = this._contentLoader.getPlaceholderName(type);
+                assetName = this._contentLoader.getPlaceholderName(type, category);
                 asset = this._contentLoader.getCollection(assetName);
 
                 if(!asset) return null;
